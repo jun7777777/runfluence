@@ -109,15 +109,31 @@ jsp 사용 러닝 정보 커뮤니티 및 러닝용품 스토어 개발
 
 유저 작성 댓글 확인
 
-
-
 ### 콘텐츠 관리 기능
-- **글 작성/수정/삭제**: 게시글 작성, 수정, 삭제 기능 제공
-- **댓글 작성**: 게시글에 댓글을 달 수 있는 기능
-- **내 작성글 확인**: 사용자가 작성한 글 목록을 확인할 수 있는 기능
+- **글 작성/수정/삭제**
+
+![image](https://github.com/user-attachments/assets/953c3540-d5d5-4eb8-ae84-b6453e6255c6)
+
+커뮤니티 탭을 통해 접근
+
+![image](https://github.com/user-attachments/assets/e55bd4e4-4af6-4a2a-9a67-bda83bf95082)
+
+게시판에 글 작성 가능
+
+- **댓글 작성**
+
+![image](https://github.com/user-attachments/assets/af479479-5a56-4fe3-8788-f1134119e08f)
+
+![image](https://github.com/user-attachments/assets/2cbd7843-703d-4bec-9cdd-073e06565ce6)
+
+
+글 상세 페이지에서 댓글 작성 가능
+
 
 ### 공지사항
-- **공지사항 확인**: 최신 공지사항 및 업데이트 내용 조회 기능
+- **공지사항 확인**
+
+  
 
 
 
