@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.CommDao">
+   <resultMap id="commResultMap" type="com.sist.web.model.Comm">
+	    <id property="commSeq" column="COMM_SEQ" />
+	    <result property="bbsSeq" column="BBS_SEQ" />
+	    <result property="commContent" column="COMM_CONTENT" />
+	    <result property="regDate" column="REG_DATE" />
+	    <result property="commGroup" column="COMM_GROUP" />
+	    <result property="commParent" column="COMM_PARENT" />
+	    <result property="commOrder" column="COMM_ORDER" />
+	    <result property="commIndent" column="COMM_INDENT" />
+	    <result property="commStatus" column="COMM_STATUS" />
+	    <result property="userEmail" column="USER_EMAIL" />
+	</resultMap>
+	
+	<resultMap id="myCommResultMap" type="com.sist.web.model.Comm">
+		<id property="commSeq" column="COMM_SEQ" />
+	    <result property="bbsSeq" column="BBS_SEQ" />
+	    <result property="commContent" column="COMM_CONTENT" />
+	    <result property="regDate" column="REG_DATE" />
+	    <result property="commGroup" column="COMM_GROUP" />
+	    <result property="commParent" column="COMM_PARENT" />
+	    <result property="commOrder" column="COMM_ORDER" />
+	    <result property="commIndent" column="COMM_INDENT" />
+	    <result property="commStatus" column="COMM_STATUS" />
+	    <result property="userEmail" column="USER_EMAIL" />
+	    <result property="bbsTitle" column ="BBS_TITLE"/>
+	    <result property="bbsUserEmail" column ="BBS_USER_EMAIL"/>
+	    <result property="userName" column ="USER_NAME"/>
+	</resultMap>
+	
+	<insert id="commInsert" parameterType="com.sist.web.model.Comm">
+	
+		<selectKey resultType="long" keyProperty="commSeq" order="BEFORE">
+			SELECT COMM_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		
+		INSERT INTO COMM (
+			COMM_SEQ,
+			BBS_SEQ,
+			COMM_CONTENT,
+			REG_DATE,
+			COMM_GROUP,
+			COMM_PARENT,
+			COMM_ORDER,
+			COMM_INDENT,
+			COMM_STATUS,
+			USER_EMAIL
+		) VALUES (
+			#{commSeq},
+			#{bbsSeq},
+			#{commContent},
+			SYSDATE,
+			#{commSeq},
+			#{commParent},
+			#{commOrder},
+			#{commIndent},
+			'Y',
+			#{userEmail}
+		)
+		
+	</insert>
+	
+	<insert id="comReplyInsert" parameterType="com.sist.web.model.Comm">
+  		
+  		<selectKey resultType="long" keyProperty="commSeq" order="BEFORE">
+			SELECT COMM_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		
+		INSERT INTO COMM (
+			COMM_SEQ,
+			BBS_SEQ,
+			COMM_CONTENT,
+			REG_DATE,
+			COMM_GROUP,
+			COMM_PARENT,
+			COMM_ORDER,
+			COMM_INDENT,
+			COMM_STATUS,
+			USER_EMAIL
+		) VALUES (
+			#{commSeq},
+			#{bbsSeq},
+			#{commContent},
+			SYSDATE,
+			#{commGroup},
+			#{commParent},
+			#{commOrder},
+			#{commIndent},
+			'Y',
+			#{userEmail}
+		)
+		
+  	</insert>
+
+	<select id="commList" parameterType="com.sist.web.model.Comm" resultMap="commResultMap">
+	
+		SELECT
+		    COMM_SEQ,
+		    BBS_SEQ,
+		    COMM_CONTENT,
+		    REG_DATE,
+		    COMM_GROUP,
+		    COMM_PARENT,
+		    COMM_ORDER,
+		    COMM_INDENT,
+		    COMM_STATUS,
+		    USER_EMAIL
+		FROM(
+		    SELECT
+		        ROWNUM RNUM,
+		        COMM_SEQ,
+			    BBS_SEQ,
+			    COMM_CONTENT,
+			    REG_DATE,
+			    COMM_GROUP,
+			    COMM_PARENT,
+			    COMM_ORDER,
+			    COMM_INDENT,
+			    COMM_STATUS,
+			    USER_EMAIL
+		    FROM(
+		        SELECT
+		            A.COMM_SEQ,
+		            NVL(A.BBS_SEQ, '') BBS_SEQ,
+		            NVL(A.COMM_CONTENT, '') COMM_CONTENT,
+		            NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') REG_DATE,
+		            NVL(A.COMM_GROUP, '') COMM_GROUP,
+		            NVL(A.COMM_PARENT, '') COMM_PARENT,
+		            NVL(A.COMM_ORDER, '') COMM_ORDER,
+		            NVL(A.COMM_INDENT, '') COMM_INDENT,
+		            NVL(A.COMM_STATUS, '') COMM_STATUS,
+				    NVL(B.USER_EMAIL, '') USER_EMAIL
+				FROM
+				    COMM A, TBL_USER B
+				WHERE
+				    A.USER_EMAIL = B.USER_EMAIL
+		            AND BBS_SEQ = #{bbsSeq}
+		            AND COMM_STATUS = 'Y'
+		            AND COMM_PARENT = '0'
+		        ORDER BY COMM_GROUP DESC, COMM_ORDER ASC))
+		WHERE
+		    RNUM <![CDATA[>=]]> #{startRow} 
+	        AND RNUM <![CDATA[<=]]> #{endRow}
+	
+	</select>
+	
+	<select id = "countCommList" parameterType ="Long" resultType ="long">
+		 SELECT COUNT(COMM_SEQ) AS CNT
+           FROM COMM
+          WHERE BBS_SEQ = #{value}
+          	AND COMM_PARENT = '0'
+            AND COMM_STATUS = 'Y'
+	</select>
+	
+	<select id="commSelect" parameterType="long" resultMap="commResultMap">
+	
+		SELECT
+            A.COMM_SEQ,
+            NVL(A.BBS_SEQ, '') BBS_SEQ,
+            NVL(A.COMM_CONTENT, '') COMM_CONTENT,
+            NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') REG_DATE,
+            NVL(A.COMM_GROUP, '') COMM_GROUP,
+            NVL(A.COMM_PARENT, '') COMM_PARENT,
+            NVL(A.COMM_ORDER, '') COMM_ORDER,
+            NVL(A.COMM_INDENT, '') COMM_INDENT,
+            NVL(A.COMM_STATUS, '') COMM_STATUS,
+		    NVL(B.USER_EMAIL, '') USER_EMAIL
+		FROM
+		    COMM A, TBL_USER B
+		WHERE
+		    A.USER_EMAIL = B.USER_EMAIL
+            AND COMM_SEQ = #{value}
+	</select>
+	
+	<update id="commGroupOrderUpdate" parameterType="com.sist.web.model.Comm">
+		UPDATE COMM SET COMM_ORDER = COMM_ORDER + 1 WHERE COMM_GROUP = #{commGroup} AND COMM_ORDER <![CDATA[>=]]> #{commOrder} 
+	</update>
+	
+	<update id="commDelete" parameterType="long">
+  		UPDATE COMM SET COMM_STATUS = 'N' WHERE COMM_SEQ = #{value}
+  	</update>
+  	
+  	<update id="commUpdate" parameterType="com.sist.web.model.Comm">
+  		UPDATE COMM SET COMM_CONTENT = #{commContent}, REG_DATE = SYSDATE WHERE COMM_SEQ = #{commSeq} AND BBS_SEQ = #{bbsSeq}
+  	</update>
+  	
+  	<select id = "replyList" parameterType = "long" resultMap="commResultMap">
+  	  SELECT
+            COMM_SEQ,
+            BBS_SEQ,
+            COMM_CONTENT,
+            REG_DATE,
+            COMM_GROUP,
+            COMM_PARENT,
+            COMM_ORDER,
+            COMM_INDENT,
+            COMM_STATUS,
+            USER_EMAIL
+       FROM COMM
+      WHERE COMM_PARENT = #{value}
+        AND COMM_STATUS = 'Y'
+  	</select>
+  	
+  	<select id="myCommList" parameterType="com.sist.web.model.Comm" resultMap="myCommResultMap">
+	
+		SELECT
+		    COMM_SEQ,
+		    BBS_SEQ,
+		    COMM_CONTENT,
+		    REG_DATE,
+		    COMM_GROUP,
+		    COMM_PARENT,
+		    COMM_ORDER,
+		    COMM_INDENT,
+		    COMM_STATUS,
+		    USER_EMAIL,
+            BBS_TITLE,
+            BBS_USER_EMAIL,
+            USER_NAME
+		FROM(
+		    SELECT
+		        ROWNUM RNUM,
+		        COMM_SEQ,
+			    BBS_SEQ,
+			    COMM_CONTENT,
+			    REG_DATE,
+			    COMM_GROUP,
+			    COMM_PARENT,
+			    COMM_ORDER,
+			    COMM_INDENT,
+			    COMM_STATUS,
+			    USER_EMAIL,
+                BBS_TITLE,
+                BBS_USER_EMAIL,
+                USER_NAME
+		    FROM(
+		        SELECT
+		            A.COMM_SEQ,
+		            NVL(A.BBS_SEQ, '') BBS_SEQ,
+		            NVL(A.COMM_CONTENT, '') COMM_CONTENT,
+		            NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') REG_DATE,
+		            NVL(A.COMM_GROUP, '') COMM_GROUP,
+		            NVL(A.COMM_PARENT, '') COMM_PARENT,
+		            NVL(A.COMM_ORDER, '') COMM_ORDER,
+		            NVL(A.COMM_INDENT, '') COMM_INDENT,
+		            NVL(A.COMM_STATUS, '') COMM_STATUS,
+				    NVL(B.USER_EMAIL, '') USER_EMAIL,
+                    NVL(C.BBS_TITLE,'')BBS_TITLE,
+                    NVL(C.USER_EMAIL,'')BBS_USER_EMAIL,
+                    NVL(B.USER_NAME, '') USER_NAME
+				FROM
+				    COMM A, TBL_USER B, BBS C
+				WHERE
+				    A.USER_EMAIL = B.USER_EMAIL
+                    AND A.BBS_SEQ = C.BBS_SEQ
+                    AND A.USER_EMAIL = #{userEmail}
+		            AND A.COMM_STATUS = 'Y'
+		            
+		       <if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+					<choose>
+		            <when test='searchType == "1"'>
+		            AND C.USER_EMAIL LIKE '%' || #{searchValue} || '%'
+		            </when>
+		            <when test='searchType == "2"'>
+		            AND C.BBS_TITLE LIKE '%' || #{searchValue} || '%'
+		            </when>
+		            <when test='searchType == "3"'>
+		            AND DBMS_LOB.INSTR(A.COMM_CONTENT, #{searchValue}) > 0
+		            </when>
+		            </choose>
+		       </if>
+		        ORDER BY COMM_GROUP DESC, COMM_ORDER ASC))
+		WHERE
+		    RNUM <![CDATA[>=]]> #{startRow} 
+	        AND RNUM <![CDATA[<=]]> #{endRow}
+	
+	</select>
+	
+	<select id = "myCountCommList" parameterType ="com.sist.web.model.Comm" resultType ="long">
+		 SELECT COUNT(COMM_SEQ) AS CNT
+           FROM COMM A, TBL_USER B, BBS C
+		 WHERE
+			    A.USER_EMAIL = B.USER_EMAIL
+                   AND A.BBS_SEQ = C.BBS_SEQ
+                   AND A.USER_EMAIL = #{userEmail}
+	            AND A.COMM_STATUS = 'Y'
+	            
+	       <if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+				<choose>
+	            <when test='searchType == "1"'>
+	            AND C.USER_EMAIL LIKE '%' || #{searchValue} || '%'
+	            </when>
+	            <when test='searchType == "2"'>
+	            AND C.BBS_TITLE LIKE '%' || #{searchValue} || '%'
+	            </when>
+	            <when test='searchType == "3"'>
+	            AND DBMS_LOB.INSTR(A.COMM_CONTENT, #{searchValue}) > 0
+	            </when>
+	            </choose>
+	       </if>
+	</select>
+  	
+</mapper>

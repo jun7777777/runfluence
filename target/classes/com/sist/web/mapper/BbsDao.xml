@@ -1,0 +1,452 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.BbsDao">
+
+	<resultMap type="com.sist.web.model.Bbs" id="bbsResultMap">
+		<id property="bbsSeq" column="BBS_SEQ" />
+	    <result property="bbsSubCateCombinedId" column="BBS_SUB_CATE_COMBINED_ID" />
+	    <result property="bbsTitle" column="BBS_TITLE" />
+	    <result property="bbsContent" column="BBS_CONTENT" />
+	    <result property="regDate" column="REG_DATE" />
+	    <result property="updateDate" column="UPDATE_DATE" />
+	    <result property="bbsReadCnt" column="BBS_READ_CNT" />
+	    <result property="bbsStatus" column="BBS_STATUS" />
+	    <result property="userEmail" column="USER_EMAIL" />
+	    <result property="bbsSubCateName" column="BBS_SUB_CATE_NAME"/>
+	    <result property="userName" column="USER_NAME"/>
+	</resultMap>
+	
+	<resultMap type="com.sist.web.model.BbsImg" id="bbsImageResultMap">
+	    <result column="BBS_IMAGE_NUM" property="bbsImageNum"/>
+	    <result column="BBS_SEQ" property="bbsSeq"/>
+	    <result column="USER_EMAIL" property="userEmail"/>
+	    <result column="BBS_IMG_ORG_NAME" property="bbsImgOrgName"/>
+	    <result column="BBS_IMG_NAME" property="bbsImgName"/>
+	    <result column="BBS_IMG_SIZE" property="bbsImgSize"/>
+	    <result column="BBS_IMG_EXT" property="bbsImgExt"/>
+	</resultMap>
+	
+	<insert id="bbsInsert" parameterType="com.sist.web.model.Bbs">
+		
+		<selectKey resultType="long" keyProperty="bbsSeq" order="BEFORE">
+			SELECT BBS_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		
+		INSERT INTO BBS (
+		    BBS_SEQ,
+		    BBS_SUB_CATE_COMBINED_ID,
+		    BBS_TITLE,
+		    BBS_CONTENT,
+		    REG_DATE,
+		    UPDATE_DATE,
+		    BBS_READ_CNT,
+		    BBS_STATUS,
+		    USER_EMAIL
+		) VALUES (
+		    #{bbsSeq},
+		    #{bbsSubCateCombinedId},
+		    #{bbsTitle},
+		    #{bbsContent},
+		    SYSDATE,
+		    SYSDATE,
+		    0,
+		    #{bbsStatus},
+		    #{userEmail}
+		)
+		
+	</insert>
+	
+	<insert id="bbsImgInsert" parameterType="com.sist.web.model.BbsImg">
+		<selectKey resultType="long" keyProperty="bbsImageNum" order="BEFORE">
+  			SELECT 
+  				NVL(MAX(BBS_IMAGE_NUM), 0) + 1 AS BBS_IMAGE_NUM
+			FROM 
+				BBS_IMG
+			WHERE
+			    BBS_SEQ = #{bbsSeq}
+  		</selectKey>
+  		
+  		INSERT INTO 
+			BBS_IMG
+			(
+			    BBS_IMAGE_NUM,
+				BBS_SEQ,
+				USER_EMAIL,
+				BBS_IMG_ORG_NAME,
+				BBS_IMG_NAME,
+				BBS_IMG_SIZE,
+				BBS_IMG_EXT
+		) VALUES (
+			#{bbsImageNum},
+			#{bbsSeq},
+			#{userEmail},
+			#{bbsImgOrgName},
+			#{bbsImgName},
+			#{bbsImgSize},
+			#{bbsImgExt}
+		)
+	</insert>
+	
+	<select id="bbsListSelect" parameterType="com.sist.web.model.Bbs" resultMap="bbsResultMap">
+		SELECT
+		    BBS_SEQ,
+		    BBS_SUB_CATE_COMBINED_ID,
+		    BBS_TITLE,
+		    BBS_CONTENT,
+		    REG_DATE,
+		    UPDATE_DATE,
+		    BBS_READ_CNT,
+		    BBS_STATUS,
+		    USER_EMAIL,
+		    USER_NAME,
+		    BBS_SUB_CATE_NAME,
+		    BBS_MAIN_CATE_ID,
+		    BBS_MAIN_CATE_NAME
+		FROM(
+		    SELECT
+		        ROWNUM RNUM,
+		        BBS_SEQ,
+		        BBS_SUB_CATE_COMBINED_ID,
+		        BBS_TITLE,
+		        BBS_CONTENT,
+		        REG_DATE,
+		        UPDATE_DATE,
+		        BBS_READ_CNT,
+		        BBS_STATUS,
+		        USER_EMAIL,
+		        USER_NAME,
+		        BBS_SUB_CATE_NAME,
+		        BBS_MAIN_CATE_ID,
+		        BBS_MAIN_CATE_NAME
+		    FROM (
+		        SELECT
+		            A.BBS_SEQ,
+		            NVL(C.BBS_SUB_CATE_COMBINED_ID, '') BBS_SUB_CATE_COMBINED_ID,
+		            NVL(A.BBS_TITLE, '') BBS_TITLE,
+		            NVL(A.BBS_CONTENT, '') BBS_CONTENT,
+		            NVL(A.REG_DATE, '') REG_DATE,
+		            NVL(A.UPDATE_DATE, '') UPDATE_DATE,
+		            NVL(A.BBS_READ_CNT, 0) BBS_READ_CNT,
+		            NVL(A.BBS_STATUS, '') BBS_STATUS,
+		            NVL(A.USER_EMAIL, '') USER_EMAIL,
+		            NVL(D.USER_NAME, '') USER_NAME,
+		            NVL(C.BBS_SUB_CATE_NAME, '') BBS_SUB_CATE_NAME,
+		            NVL(B.BBS_MAIN_CATE_ID, '') BBS_MAIN_CATE_ID,
+		            NVL(B.BBS_MAIN_CATE_NAME, '') BBS_MAIN_CATE_NAME
+		        FROM
+		            BBS A, BBS_MAIN_CATE B, BBS_SUB_CATE C, TBL_USER D
+		        WHERE
+		            A.BBS_SUB_CATE_COMBINED_ID = C.BBS_SUB_CATE_COMBINED_ID
+		            AND B.BBS_MAIN_CATE_ID = C.BBS_MAIN_CATE_ID
+		            AND A.USER_EMAIL = D.USER_EMAIL
+		            AND BBS_STATUS = 'Y'
+	            <if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+		            <choose>
+		            <when test='searchType == "1"'>
+		            AND A.USER_EMAIL LIKE '%' || #{searchValue} || '%'
+		            </when>
+		            <when test='searchType == "2"'>
+		            AND A.BBS_TITLE LIKE '%' || #{searchValue} || '%'
+		            </when>
+		            <when test='searchType == "3"'>
+		            AND DBMS_LOB.INSTR(A.BBS_CONTENT, #{searchValue}) > 0
+		            </when>
+		            </choose>
+				</if>
+				<if test='bbsSubCateCombinedId != null and bbsSubCateCombinedId != ""'>
+					AND NVL(C.BBS_SUB_CATE_COMBINED_ID, '') LIKE '%' || #{bbsSubCateCombinedId} || '%'
+				</if>
+		        ORDER BY BBS_SEQ DESC))
+		WHERE
+		    RNUM <![CDATA[>=]]> #{startRow} 
+	        AND RNUM <![CDATA[<=]]> #{endRow}
+
+	</select>
+	
+	<select id="bbsListCount" parameterType="com.sist.web.model.Bbs" resultType="long">
+	
+		SELECT
+			COUNT(BBS_SEQ)
+		FROM
+			BBS A, BBS_MAIN_CATE B, BBS_SUB_CATE C, TBL_USER D
+		WHERE
+            A.BBS_SUB_CATE_COMBINED_ID = C.BBS_SUB_CATE_COMBINED_ID
+            AND B.BBS_MAIN_CATE_ID = C.BBS_MAIN_CATE_ID
+            AND A.USER_EMAIL = D.USER_EMAIL
+            AND BBS_STATUS = 'Y'
+		<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+			<choose>
+            <when test='searchType == "1"'>
+            AND A.USER_EMAIL LIKE '%' || #{searchValue} || '%'
+            </when>
+            <when test='searchType == "2"'>
+            AND A.BBS_TITLE LIKE '%' || #{searchValue} || '%'
+            </when>
+            <when test='searchType == "3"'>
+            AND DBMS_LOB.INSTR(A.BBS_CONTENT, #{searchValue}) > 0
+            </when>
+            </choose>
+		</if>
+		<if test='bbsSubCateCombinedId != null and bbsSubCateCombinedId != ""'>
+			AND NVL(C.BBS_SUB_CATE_COMBINED_ID, '') LIKE '%' || #{bbsSubCateCombinedId} || '%'
+		</if>
+	</select>
+	
+	<select id="bbsSelect" parameterType="long" resultMap="bbsResultMap">
+	
+		SELECT
+			A.BBS_SEQ,
+            NVL(A.BBS_SUB_CATE_COMBINED_ID, '') BBS_SUB_CATE_COMBINED_ID,
+            NVL(A.BBS_TITLE, '') BBS_TITLE,
+            NVL(A.BBS_CONTENT, '') BBS_CONTENT,
+            NVL(A.REG_DATE, '') REG_DATE,
+            NVL(A.UPDATE_DATE, '') UPDATE_DATE,
+            NVL(A.BBS_READ_CNT, 0) BBS_READ_CNT,
+            NVL(A.BBS_STATUS, '') BBS_STATUS,
+            NVL(A.USER_EMAIL, '') USER_EMAIL,
+            NVL(B.USER_NAME, '') USER_NAME,
+            NVL(C.BBS_SUB_CATE_NAME,'')BBS_SUB_CATE_NAME
+		FROM
+			BBS A, TBL_USER B, BBS_SUB_CATE C
+		WHERE
+            A.BBS_SUB_CATE_COMBINED_ID = C.BBS_SUB_CATE_COMBINED_ID
+			AND A.USER_EMAIL = B.USER_EMAIL
+			AND A.BBS_SEQ = #{value}
+	</select>
+	
+	<select id="bbsImgSelect" parameterType="long" resultMap="bbsImageResultMap">
+	
+		SELECT
+			BBS_IMAGE_NUM,
+			BBS_SEQ,
+			USER_EMAIL,
+			BBS_IMG_ORG_NAME,
+			BBS_IMG_NAME,
+			BBS_IMG_SIZE,
+			BBS_IMG_EXT
+		FROM
+			BBS_IMG
+		WHERE
+			BBS_SEQ = #{value}
+	</select>
+	
+	<update id="bbsReadCntPlus" parameterType="long">
+	
+		UPDATE
+			BBS
+		SET
+			BBS_READ_CNT = BBS_READ_CNT + 1
+		WHERE
+			BBS_SEQ = #{value}
+	
+	</update>
+	
+	<update id="bbsDelete" parameterType="long">
+	
+		UPDATE
+			BBS
+		SET
+			BBS_STATUS = 'N'
+		WHERE
+			BBS_SEQ = #{value}
+	
+	</update>
+	
+	<delete id="bbsImgDelete" parameterType="com.sist.web.model.BbsImg">
+	
+		DELETE
+		FROM
+			BBS_IMG
+		WHERE
+			BBS_IMAGE_NUM = #{bbsImageNum},
+			AND BBS_SEQ = #{bbsSeq}
+	
+	</delete>
+	
+	<update id="bbsUpdate" parameterType="com.sist.web.model.Bbs">
+	
+		UPDATE
+			BBS
+		SET
+			BBS_TITLE = #{bbsTitle}, BBS_CONTENT = #{bbsContent}, UPDATE_DATE = SYSDATE
+		WHERE
+			BBS_SEQ = #{bbsSeq}
+	</update>
+	
+	<select id="myBbsListSelect" parameterType="com.sist.web.model.Bbs" resultMap="bbsResultMap">
+	
+	SELECT
+		    BBS_SEQ,
+		    BBS_SUB_CATE_COMBINED_ID,
+		    BBS_TITLE,
+		    BBS_CONTENT,
+		    REG_DATE,
+		    UPDATE_DATE,
+		    BBS_READ_CNT,
+		    BBS_STATUS,
+		    USER_EMAIL,
+		    USER_NAME,
+		    BBS_SUB_CATE_NAME,
+		    BBS_MAIN_CATE_ID,
+		    BBS_MAIN_CATE_NAME
+		FROM(
+		    SELECT
+		        ROWNUM RNUM,
+		        BBS_SEQ,
+		        BBS_SUB_CATE_COMBINED_ID,
+		        BBS_TITLE,
+		        BBS_CONTENT,
+		        REG_DATE,
+		        UPDATE_DATE,
+		        BBS_READ_CNT,
+		        BBS_STATUS,
+		        USER_EMAIL,
+		        USER_NAME,
+		        BBS_SUB_CATE_NAME,
+		        BBS_MAIN_CATE_ID,
+		        BBS_MAIN_CATE_NAME
+		    FROM (
+		        SELECT
+		            A.BBS_SEQ,
+		            NVL(C.BBS_SUB_CATE_COMBINED_ID, '') BBS_SUB_CATE_COMBINED_ID,
+		            NVL(A.BBS_TITLE, '') BBS_TITLE,
+		            NVL(A.BBS_CONTENT, '') BBS_CONTENT,
+		            NVL(A.REG_DATE, '') REG_DATE,
+		            NVL(A.UPDATE_DATE, '') UPDATE_DATE,
+		            NVL(A.BBS_READ_CNT, 0) BBS_READ_CNT,
+		            NVL(A.BBS_STATUS, '') BBS_STATUS,
+		            NVL(A.USER_EMAIL, '') USER_EMAIL,
+		            NVL(D.USER_NAME, '') USER_NAME,
+		            NVL(C.BBS_SUB_CATE_NAME, '') BBS_SUB_CATE_NAME,
+		            NVL(B.BBS_MAIN_CATE_ID, '') BBS_MAIN_CATE_ID,
+		            NVL(B.BBS_MAIN_CATE_NAME, '') BBS_MAIN_CATE_NAME
+		        FROM
+		            BBS A, BBS_MAIN_CATE B, BBS_SUB_CATE C, TBL_USER D
+		        WHERE
+		            A.BBS_SUB_CATE_COMBINED_ID = C.BBS_SUB_CATE_COMBINED_ID
+		            AND B.BBS_MAIN_CATE_ID = C.BBS_MAIN_CATE_ID
+		            AND A.USER_EMAIL = D.USER_EMAIL
+		            AND A.BBS_STATUS = 'Y'
+                    AND A.USER_EMAIL = #{userEmail}
+		        
+		        <if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+		            <choose>
+		            <when test='searchType == "1"'>
+		            AND A.USER_EMAIL LIKE '%' || #{searchValue} || '%'
+		            </when>
+		            <when test='searchType == "2"'>
+		            AND A.BBS_TITLE LIKE '%' || #{searchValue} || '%'
+		            </when>
+		            <when test='searchType == "3"'>
+		            AND DBMS_LOB.INSTR(A.BBS_CONTENT, #{searchValue}) > 0
+		            </when>
+		            </choose>
+				</if>
+				<if test='bbsSubCateCombinedId != null and bbsSubCateCombinedId != ""'>
+					AND NVL(C.BBS_SUB_CATE_COMBINED_ID, '') LIKE '%' || #{bbsSubCateCombinedId} || '%'
+				</if>
+		        ORDER BY BBS_SEQ DESC))
+		WHERE
+		    RNUM <![CDATA[>=]]> #{startRow} 
+	        AND RNUM <![CDATA[<=]]> #{endRow}
+	</select>
+	
+	<select id="myBbsListCount" parameterType="com.sist.web.model.Bbs" resultType="long">
+	
+		SELECT
+			COUNT(BBS_SEQ)
+		FROM
+			BBS A, BBS_MAIN_CATE B, BBS_SUB_CATE C, TBL_USER D
+		WHERE
+            A.BBS_SUB_CATE_COMBINED_ID = C.BBS_SUB_CATE_COMBINED_ID
+            AND B.BBS_MAIN_CATE_ID = C.BBS_MAIN_CATE_ID
+            AND A.USER_EMAIL = D.USER_EMAIL
+            AND BBS_STATUS = 'Y'
+            AND A.USER_EMAIL = #{userEmail}
+		<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+			<choose>
+            <when test='searchType == "1"'>
+            AND A.USER_EMAIL LIKE '%' || #{searchValue} || '%'
+            </when>
+            <when test='searchType == "2"'>
+            AND A.BBS_TITLE LIKE '%' || #{searchValue} || '%'
+            </when>
+            <when test='searchType == "3"'>
+            AND DBMS_LOB.INSTR(A.BBS_CONTENT, #{searchValue}) > 0
+            </when>
+            </choose>
+		</if>
+		<if test='bbsSubCateCombinedId != null and bbsSubCateCombinedId != ""'>
+			AND NVL(C.BBS_SUB_CATE_COMBINED_ID, '') LIKE '%' || #{bbsSubCateCombinedId} || '%'
+		</if>
+	</select>
+	
+	<select id="noticeListSelect" parameterType="com.sist.web.model.Bbs" resultMap="bbsResultMap">
+    	SELECT
+		    bbs_seq,
+		    bbs_sub_cate_combined_id,
+		    bbs_title,
+		    bbs_content,
+		    reg_date,
+		    update_date,
+		    bbs_read_cnt,
+		    bbs_status, 
+		    user_name
+		    from
+		        (SELECT
+		            rownum rnum,
+		            bbs_seq,
+		            bbs_sub_cate_combined_id,
+		            bbs_title,
+		            bbs_content,
+		            reg_date,
+		            update_date,
+		            bbs_read_cnt,
+		            bbs_status, 
+		            user_name
+		            from                            
+		                (SELECT
+		                    b.bbs_seq as bbs_seq,
+		                    b.bbs_sub_cate_combined_id as bbs_sub_cate_combined_id,
+		                    b.bbs_title as bbs_title,
+		                    b.bbs_content as bbs_content,
+		                    to_char(b.reg_date , 'yyyy.mm.dd') as reg_date,
+		                    to_char(b.update_date,'yyyy.mm.dd') as update_date,
+		                    b.bbs_read_cnt as bbs_read_cnt,
+		                    b.bbs_status as bbs_status,
+		                    u.user_name as user_name
+		                FROM
+		                    bbs b 
+		                    JOIN tbl_user u on b.user_email = u.user_email
+		                    join BBS_SUB_CATE S ON b.bbs_sub_cate_combined_id = s.bbs_sub_cate_combined_id
+		                where
+		                    1 = 1
+		                    AND b.bbs_sub_cate_combined_id = 'ADAC'
+		                    AND b.bbs_status = 'Y'
+		                    <if test="searchValue != null and searchValue != ''">
+                    			AND b.bbs_title LIKE '%' || #{searchValue} || '%'
+                			</if>
+		                    order by b.bbs_seq desc))
+			where rnum BETWEEN #{startRow} and #{endRow}
+    </select>
+    
+    <select id="noticeTotalCnt" parameterType="com.sist.web.model.Bbs" resultType="long">
+    	select count(bbs_seq) 
+			from 
+			    bbs b
+			    JOIN tbl_user u on b.user_email = u.user_email
+			    join BBS_SUB_CATE S ON b.bbs_sub_cate_combined_id = s.bbs_sub_cate_combined_id
+			where
+			    1 = 1
+			    AND b.bbs_sub_cate_combined_id = 'ADAC'
+			    AND b.bbs_status = 'Y'
+			    <if test="searchValue != null and searchValue != ''">
+                    AND b.bbs_title LIKE '%' || #{searchValue} || '%'
+                </if>
+    </select>
+	
+	<select id="bbsImageSeq" parameterType="long" resultType="short">
+       SELECT NVL(MAX(BBS_IMAGE_SEQ), 0) + 1 FROM BBS_IMAGE WHERE BBS_SEQ = #{value}
+    </select>
+	
+</mapper>

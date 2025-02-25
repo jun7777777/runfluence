@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.CartDao">
+	<resultMap type="com.sist.web.model.Cart" id="cartResultMap">
+		<id property="userEmail" column="USER_EMAIL" />
+	    <result property="prodId" column="PROD_ID" />
+	    <result property="variantsOptionValueCombId" column="VARIANTS_OPTION_VALUE_COMB_ID" />
+	    <result property="cartQuantity" column="CART_QUANTITY" />
+	    <result property="variantsOptionValueCombStock" column="VARIANTS_OPTION_VALUE_COMB_STOCK" />
+	    <result property="variantsOptionValueCombText" column="VARIANTS_OPTION_VALUE_COMB_TEXT" />
+	    <result property="prodName" column="PROD_NAME" />
+	    <result property="prodPrice" column="PROD_PRICE" />
+	    <result property="prodDiscountPercent" column="PROD_DISCOUNT_PERCENT" />
+	    <result property="prodStatus" column="PROD_STATUS" />
+	    <result property="discountedProdPrice" column="DISCOUNTED_PROD_PRICE" />
+	</resultMap>
+
+    <select id="cartList" parameterType="java.util.Map" resultMap="cartResultMap">
+        SELECT 
+            A.USER_EMAIL USER_EMAIL, 
+            A.PROD_ID PROD_ID, 
+            A.VARIANTS_OPTION_VALUE_COMB_ID VARIANTS_OPTION_VALUE_COMB_ID, 
+            NVL(A.CART_QUANTITY, 1) CART_QUANTITY,
+            NVL(B.VARIANTS_OPTION_VALUE_COMB_STOCK, 0) VARIANTS_OPTION_VALUE_COMB_STOCK,
+            NVL(B.VARIANTS_OPTION_VALUE_COMB_TEXT, '') VARIANTS_OPTION_VALUE_COMB_TEXT,
+            NVL(C.PROD_NAME, '') PROD_NAME,
+            NVL(C.PROD_PRICE, 0) PROD_PRICE,
+            NVL(C.PROD_DISCOUNT_PERCENT, 0) PROD_DISCOUNT_PERCENT,
+            NVL(C.PROD_STATUS, 'I') PROD_STATUS,
+            CASE 
+                WHEN NVL(C.PROD_DISCOUNT_PERCENT, 0) <![CDATA[>]]> 0 THEN 
+                    ROUND(C.PROD_PRICE * (1 - C.PROD_DISCOUNT_PERCENT / 100))  
+                ELSE 
+                    C.PROD_PRICE
+            END DISCOUNTED_PROD_PRICE
+        FROM 
+            CART A
+        JOIN 
+            VARIANTS_OPTION_VALUE_COMB B 
+            ON A.PROD_ID = B.PROD_ID 
+            AND A.VARIANTS_OPTION_VALUE_COMB_ID = B.VARIANTS_OPTION_VALUE_COMB_ID
+        JOIN 
+            PROD C 
+            ON A.PROD_ID = C.PROD_ID
+        WHERE 
+            A.USER_EMAIL = #{userEmail}
+            <if test="prodCombList != null and prodCombList.size() > 0">
+                AND (A.PROD_ID, A.VARIANTS_OPTION_VALUE_COMB_ID) IN 
+				<foreach collection="prodCombList" item="item" open="(" separator="," close=")">
+				    (#{item.prodId}, #{item.variantsOptionValueCombId})
+				</foreach>
+            </if>
+    </select>
+	
+	<select id="cartInsertCheck" parameterType="com.sist.web.model.Cart" resultType="string">
+		SELECT 
+		    CASE 
+		        WHEN EXISTS (
+		            SELECT 1 
+		            FROM CART
+		            WHERE USER_EMAIL = #{userEmail}
+		              AND PROD_ID = #{prodId}
+		              AND VARIANTS_OPTION_VALUE_COMB_ID = #{variantsOptionValueCombId}
+		        ) THEN 'DUPLICATE'
+		        WHEN (
+		            SELECT VARIANTS_OPTION_VALUE_COMB_STOCK 
+		            FROM VARIANTS_OPTION_VALUE_COMB
+		            WHERE VARIANTS_OPTION_VALUE_COMB_ID = #{variantsOptionValueCombId}
+		              AND PROD_ID = #{prodId}
+		        ) <![CDATA[>=]]> #{cartQuantity} THEN 'INSERT'
+		        ELSE 'OUT_OF_STOCK'
+		    END AS CAN_INSERT
+		FROM DUAL
+	</select>
+	
+	<insert id="cartInsert" parameterType="com.sist.web.model.Cart">
+        INSERT INTO CART(USER_EMAIL, PROD_ID, VARIANTS_OPTION_VALUE_COMB_ID, CART_QUANTITY)
+        VALUES(#{userEmail}, #{prodId}, #{variantsOptionValueCombId}, #{cartQuantity})
+    </insert>
+
+    <select id="getStock" parameterType="com.sist.web.model.Cart" resultType="long">
+	   SELECT 
+	       VARIANTS_OPTION_VALUE_COMB_STOCK
+	   FROM VARIANTS_OPTION_VALUE_COMB
+       WHERE 
+           VARIANTS_OPTION_VALUE_COMB_ID = #{variantsOptionValueCombId}
+           AND PROD_ID = #{prodId}
+    </select>    
+    
+    <update id="cartUpdate" parameterType="com.sist.web.model.Cart">
+	    UPDATE CART
+	        SET CART_QUANTITY = #{cartQuantity}
+	    WHERE
+	        USER_EMAIL = #{userEmail}
+	        AND PROD_ID = #{prodId}
+	        AND VARIANTS_OPTION_VALUE_COMB_ID = #{variantsOptionValueCombId}
+    </update>
+
+	<delete id="cartDelete" parameterType="java.util.List">
+	    DELETE FROM CART
+	    WHERE 
+	    <foreach item="cart" collection="list" open="(" close=")" separator="OR">
+	        (user_email = #{cart.userEmail} AND prod_id = #{cart.prodId} AND variants_option_value_comb_id = #{cart.variantsOptionValueCombId})
+	    </foreach>
+	</delete>
+
+	<select id="getTotalProdPrice" parameterType="java.util.Map" resultType="long">
+		SELECT 
+		    NVL(SUM(
+		        CASE 
+		            WHEN NVL(C.PROD_DISCOUNT_PERCENT, 0) > 0 THEN 
+		                ROUND(C.PROD_PRICE * (1 - C.PROD_DISCOUNT_PERCENT / 100)) * NVL(A.CART_QUANTITY, 1)  
+		            ELSE 
+		                C.PROD_PRICE * NVL(A.CART_QUANTITY, 1) 
+		        END
+		    ), 0) TOTAL_PROD_PRICE
+		FROM 
+		    CART A
+		JOIN 
+		    VARIANTS_OPTION_VALUE_COMB B ON A.PROD_ID = B.PROD_ID AND A.VARIANTS_OPTION_VALUE_COMB_ID = B.VARIANTS_OPTION_VALUE_COMB_ID
+		JOIN 
+		    PROD C ON A.PROD_ID = C.PROD_ID
+		WHERE 
+		    A.USER_EMAIL = #{userEmail}
+            <if test="prodCombList != null and prodCombList.size() > 0">
+                AND (A.PROD_ID, A.VARIANTS_OPTION_VALUE_COMB_ID) IN 
+				<foreach collection="prodCombList" item="item" open="(" separator="," close=")">
+				    (#{item.prodId}, #{item.variantsOptionValueCombId})
+				</foreach>
+            </if>
+	</select>
+</mapper>

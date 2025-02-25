@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.StyleWishDao">
+
+    <resultMap type="com.sist.web.model.StyleWishList" id="styleWishListMap">
+        <id property="bbsSeq" column="BBS_SEQ"/>
+        <id property="userEmail" column="USER_EMAIL"/>
+        <result property="regDate" column="REG_DATE"/>
+        <result property="userName" column="USER_NAME"/>
+		<result property="bbsImgName" column="BBS_IMG_NAME"/>
+		<result property="bbsTitle" column="BBS_TITLE"/>   
+    </resultMap>
+    
+    
+    
+    <insert id="styleWishListAdd" parameterType="com.sist.web.model.StyleWishList">
+        INSERT INTO BBS_WISHLIST (BBS_SEQ, USER_EMAIL, REG_DATE)
+        VALUES (
+            #{bbsSeq},         
+            #{userEmail},       
+            SYSDATE         
+        )
+    </insert>
+
+    <delete id="styleWishListDel" parameterType="com.sist.web.model.StyleWishList">
+        DELETE FROM 
+            BBS_WISHLIST
+        WHERE 
+            BBS_SEQ = #{bbsSeq}
+          AND USER_EMAIL = #{userEmail}
+    </delete>
+
+  
+    
+    <select id="styleWishList" parameterType="String" resultMap="styleWishListMap">
+          SELECT  A.BBS_SEQ BBS_SEQ,
+		        NVL(B.USER_EMAIL, '') USER_EMAIL,
+		        NVL(B.USER_NAME, '') USER_NAME,
+		        NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD'), '') REG_DATE,
+		        NVL(D.BBS_IMG_NAME, '') BBS_IMG_NAME,
+		        NVL(A.BBS_TITLE, '') BBS_TITLE
+	    FROM BBS A, TBL_USER B, BBS_WISHLIST C, BBS_IMG D
+	    WHERE A.BBS_SEQ = C.BBS_SEQ
+	      AND B.USER_EMAIL = C.USER_EMAIL
+	      AND A.BBS_SEQ = D.BBS_SEQ
+	      AND A.BBS_SUB_CATE_COMBINED_ID = 'CMSY'
+	      AND B.USER_EMAIL = #{value}
+          
+    </select>
+
+    <select id="styleWishListCount" parameterType="String" resultType="long">
+        SELECT  COUNT(A.BBS_TITLE) AS CNT
+        FROM BBS A, TBL_USER B, BBS_WISHLIST C, BBS_IMG D
+        WHERE A.BBS_SEQ = C.BBS_SEQ
+          AND B.USER_EMAIL = C.USER_EMAIL
+          AND A.BBS_SEQ = D.BBS_SEQ
+          AND A.BBS_SUB_CATE_COMBINED_ID = 'CMSY'
+          AND B.USER_EMAIL = #{value}
+    </select>
+	
+	<select id ="styleWishSelect"  parameterType="com.sist.web.model.StyleWishList"  resultType="long">
+	SELECT COUNT(BBS_SEQ) AS CNT
+		FROM BBS_WISHLIST
+		WHERE BBS_SEQ =  #{bbsSeq}
+		AND USER_EMAIL= #{userEmail}
+	
+	</select>
+
+
+
+</mapper>

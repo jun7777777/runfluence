@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.UserDao">
+    
+    <resultMap type="com.sist.web.model.User" id="userResultMap">
+        <id column="USER_EMAIL" property="userEmail"/>
+        <result column="USER_PWD" property="userPwd"/>
+        <result column="USER_NAME" property="userName"/>
+        <result column="USER_TEL" property="userTel"/>
+        <result column="USER_JUMIN" property="userJumin"/>
+        <result column="USER_STATUS" property="userStatus"/>
+        <result column="USER_REG_DATE" property="userRegDate"/>
+        <result column="USER_GENDER" property="userGender"/>
+        <result column="USER_GRADE" property="userGrade"/>
+        <result column="USER_PROFILE_IMG" property="userProfileImg"/>
+        <result column="USER_PROFILE_INTRO" property="userProfileIntro"/>
+    </resultMap>
+    
+    <resultMap type="com.sist.web.model.ShippingAddr" id="shippingAddrResultMap">
+        <id column="USER_EMAIL" property="userEmail" />
+        <id column="SHIPPING_ADDR_NUM" property="shippingAddrNum" />
+        <result column="SHIPPING_ADDR_LINE1" property="shippingAddrLine1" />
+        <result column="SHIPPING_ADDR_LINE2" property="shippingAddrLine2"/>
+        <result column="SHIPPING_ADDR_ZIPCODE" property="shippingAddrZipcode"/>
+        <result column="RECIPIENT_TEL" property="recipientTel"/>
+        <result column="RECIPIENT_NAME" property="recipientName"/>
+        <result column="IS_DEFAULT" property="isDefault"/>
+        <result column="SHIPPING_ADDR_STATUS" property="shippingAddrStatus"/>
+    </resultMap>
+    
+    <select id = "userSelect" parameterType="String" resultMap="userResultMap">
+        SELECT
+            user_email,
+            nvl(user_pwd, '') as user_pwd,
+            nvl(user_name,'') as user_name,
+            nvl(user_tel,'') as user_tel,
+            nvl(user_jumin, '') as user_jumin,
+            nvl(user_status,'') as user_status,
+            nvl(to_char(user_reg_date,'yyyy.mm.dd'),'') as user_reg_date,
+            nvl(user_gender,'') as user_gender,
+            nvl(user_grade,'') as user_grade,
+            user_profile_img as user_profile_img,
+            user_profile_intro as user_profile_intro
+        FROM
+            tbl_user
+        where
+            user_email = #{value}
+    </select>
+    
+    <insert id="userInsert" parameterType="com.sist.web.model.User">
+        INSERT INTO tbl_user (
+            user_email,
+            user_pwd,
+            user_name,
+            user_tel,
+            user_jumin,
+            user_status,
+            user_reg_date,
+            user_gender,
+            user_grade
+        ) VALUES (
+            #{userEmail},#{userPwd},#{userName},#{userTel},#{userJumin},#{userStatus},SYSDATE,#{userGender},#{userGrade}
+        )
+    </insert>
+    
+    <select id = "userEmailFind" parameterType="map" resultType="String">
+        select 
+            user_email 
+        from 
+            tbl_user
+        where 
+            user_name = #{userName}
+            and user_tel=#{userTel}
+            and user_jumin=#{userJumin}
+    </select>
+    
+    <select id="userPwdFind" resultType="String">
+        select 
+            user_pwd
+        from
+            tbl_user
+        where
+            user_email = #{userEmail}
+        and
+            user_tel = #{userTel}
+        and
+            user_jumin = #{userJumin}
+    </select>
+    
+    <update id="userPwdupdate" parameterType="com.sist.web.model.User">
+        UPDATE
+            tbl_user
+            set user_pwd = #{userPwd}
+        where
+            user_email = #{userEmail}  
+    </update>
+    
+    <select id="userNameFind" resultType="String">
+        select 
+            user_name
+        from 
+            tbl_user
+        where 
+            user_email = #{userEmail}
+    </select>
+    
+    <update id="userNameupdate" parameterType="com.sist.web.model.User">
+        UPDATE
+            tbl_user
+            set user_name = #{userName}
+        where
+            user_email = #{userEmail}  
+    </update>
+    
+    <update id="userTelupdate" parameterType="com.sist.web.model.User">
+        UPDATE
+            tbl_user
+            set user_tel = #{userTel}
+        where
+            user_email = #{userEmail}  
+    </update>
+    
+    <update id="userProfileImgch" parameterType="com.sist.web.model.User">
+        UPDATE
+            tbl_user
+            set USER_PROFILE_IMG = #{userProfileImg}
+        where
+            user_email = #{userEmail}  
+    </update>
+    
+    <update id="userProfileImgDel" parameterType="com.sist.web.model.User">  
+        update tbl_user
+            set USER_PROFILE_IMG = null
+        where
+            user_email = #{userEmail}
+    </update>
+    
+    <update id="userProfileIntro" parameterType="com.sist.web.model.User">
+        UPDATE
+            tbl_user
+            set USER_PROFILE_INTRO = #{userProfileIntro}
+        where
+            user_email = #{userEmail}
+    </update>
+    
+    <update id="userDel" parameterType="com.sist.web.model.User">
+        UPDATE
+            tbl_user
+            set USER_status = #{userStatus}
+        where
+            user_email = #{userEmail}
+    </update>
+    
+        <!-- 임윤한 작성 : 배송지 추가 -->    
+    <insert id="userAddrInsert" parameterType="com.sist.web.model.ShippingAddr">
+        <selectKey resultType="short" keyProperty="shippingAddrNum" order="BEFORE">
+            SELECT NVL(MAX(SHIPPING_ADDR_NUM), 0) + 1
+            FROM SHIPPING_ADDR
+            WHERE USER_EMAIL = #{userEmail}
+        </selectKey>
+    
+        INSERT INTO SHIPPING_ADDR (
+            USER_EMAIL,
+            SHIPPING_ADDR_NUM,
+            SHIPPING_ADDR_LINE1,
+            SHIPPING_ADDR_LINE2,
+            SHIPPING_ADDR_ZIPCODE,
+            RECIPIENT_TEL,
+            RECIPIENT_NAME,
+            IS_DEFAULT,
+            SHIPPING_ADDR_STATUS
+        ) VALUES (
+            #{userEmail},
+            #{shippingAddrNum},
+            #{shippingAddrLine1},
+            #{shippingAddrLine2},
+            #{shippingAddrZipcode},
+            #{recipientTel},
+            #{recipientName},
+            #{isDefault},
+            'Y'
+        )
+    </insert>
+    
+    <!--  임윤한 작성 : 특정 사용자의 배송지 리스트 조회 (기본 배송지는 맨 위에) -->
+    <select id="userAddrList" parameterType="string" resultMap="shippingAddrResultMap">
+        SELECT
+            USER_EMAIL,
+            SHIPPING_ADDR_NUM,
+            SHIPPING_ADDR_LINE1,
+            SHIPPING_ADDR_LINE2,
+            SHIPPING_ADDR_ZIPCODE,
+            RECIPIENT_TEL,
+            RECIPIENT_NAME,
+            IS_DEFAULT
+        FROM 
+            SHIPPING_ADDR
+        WHERE USER_EMAIL = #{value}
+        and shipping_addr_status = 'Y'
+        ORDER BY 
+            CASE WHEN IS_DEFAULT = 'Y' THEN 0 ELSE 1 END, 
+            SHIPPING_ADDR_NUM
+    </select>
+    
+    <!--  임윤한 작성 : 특정 사용자의 default 배송지 조회 -->
+    <select id="userDefaultAddrSelect" parameterType="string" resultMap="shippingAddrResultMap">
+        SELECT
+            USER_EMAIL,
+            SHIPPING_ADDR_NUM,
+            SHIPPING_ADDR_LINE1,
+            SHIPPING_ADDR_LINE2,
+            SHIPPING_ADDR_ZIPCODE,
+            RECIPIENT_TEL,
+            RECIPIENT_NAME,
+            IS_DEFAULT
+        FROM 
+            SHIPPING_ADDR
+        WHERE USER_EMAIL = #{value}
+            AND IS_DEFAULT = 'Y'
+            and shipping_addr_status = 'Y'
+    </select>
+    
+    
+    <update id="userAddrupdate" parameterType="com.sist.web.model.ShippingAddr">
+        UPDATE shipping_addr
+            set 
+                SHIPPING_ADDR_LINE1 = #{shippingAddrLine1},
+                SHIPPING_ADDR_LINE2 = #{shippingAddrLine2},
+                SHIPPING_ADDR_ZIPCODE = #{shippingAddrZipcode},
+                RECIPIENT_TEL = #{recipientTel},
+                RECIPIENT_NAME = #{recipientName},
+                IS_DEFAULT = #{isDefault}
+            where
+                user_email = #{userEmail}
+                and shipping_addr_num = #{shippingAddrNum}
+    </update>
+        
+    <update id="resetDefault" parameterType="com.sist.web.model.ShippingAddr">
+    	UPDATE shipping_addr
+			SET is_default = 'N'
+		WHERE user_email = #{userEmail} AND is_default = 'Y' AND SHIPPING_ADDR_STATUS = 'Y'
+    </update>
+    
+    <!-- 이준호 작성 주소 soft 삭제 -->
+    <update id="addrSoftDel" parameterType="com.sist.web.model.ShippingAddr">
+    	UPDATE shipping_addr
+		SET SHIPPING_ADDR_STATUS = 'N', is_default = 'N'
+		WHERE shipping_addr_num = #{shippingAddrNum}
+		AND user_email = #{userEmail}
+		AND SHIPPING_ADDR_STATUS = 'Y'
+    </update>
+    
+    <!-- 이준호 작성 주소번호 최솟값 선택 -->
+    <select id="findMinShippingAddrNum" parameterType="com.sist.web.model.ShippingAddr" resultType="short">
+        SELECT MIN(shipping_addr_num)
+        FROM shipping_addr
+        WHERE user_email = #{userEmail} 
+       	AND SHIPPING_ADDR_STATUS = 'Y'
+    </select>
+    
+    <update id="setDefaultAddr" parameterType="com.sist.web.model.ShippingAddr">
+    	UPDATE shipping_addr
+		SET is_default = 'Y'
+		WHERE shipping_addr_num = #{shippingAddrNum}
+		AND user_email = #{userEmail} 
+		AND SHIPPING_ADDR_STATUS = 'Y'
+    </update>
+    
+    <select id="findIsDefault" parameterType="com.sist.web.model.ShippingAddr" resultType="string">
+        SELECT is_default
+        FROM shipping_addr
+        WHERE shipping_addr_num = #{shippingAddrNum} 
+          AND user_email = #{userEmail} 
+          AND SHIPPING_ADDR_STATUS = 'Y'
+    </select>
+    
+    
+</mapper>

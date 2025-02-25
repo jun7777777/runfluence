@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.ReviewDao">
+
+	<resultMap id="reviewResultMap" type="com.sist.web.model.Review">
+	    <id property="reviewSeq" column="REVIEW_SEQ" />
+	    <result property="prodId" column="PROD_ID" />
+	    <result property="reviewContent" column="REVIEW_CONTENT" />
+	    <result property="reviewDate" column="REVIEW_DATE" />
+	    <result property="reviewStatus" column="REVIEW_STATUS" />
+	    <result property="reviewRating" column="REVIEW_RATING" />
+	    <result property="reviewUpdateDate" column="REVIEW_UPDATE_DATE" />
+	    <result property="userEmail" column="USER_EMAIL" />
+	    <result property="userName" column="USER_NAME" />
+	</resultMap>
+	
+	<resultMap id="reviewImgResultMap" type="com.sist.web.model.ReviewImg">
+		<id property="reviewImgNum" column="REVIEW_IMG_NUM" />
+		<result property="reviewSeq" column="REVIEW_SEQ" />
+		<result property="userEmail" column="USER_EMAIL" />
+		<result property="reviewImgOrgName" column="REVIEW_IMG_ORG_NAME" />
+		<result property="reviewImgName" column="REVIEW_IMG_NAME" />
+		<result property="reviewImgSize" column="REVIEW_IMG_SIZE" />
+		<result property="reviewImgExt" column="REVIEW_IMG_EXT" />
+		<result property="regDate" column="REG_DATE" />
+	</resultMap>
+	
+	<insert id="reviewInsert" parameterType="com.sist.web.model.Review">
+		<selectKey resultType="long" keyProperty="reviewSeq" order="BEFORE">
+  			SELECT SEQ_REVIEW_SEQ.NEXTVAL FROM DUAL
+  		</selectKey>
+  		
+  		INSERT INTO
+  			REVIEW 
+  				(
+  					REVIEW_SEQ, PROD_ID, REVIEW_CONTENT, REVIEW_DATE, REVIEW_STATUS, REVIEW_RATING, REVIEW_UPDATE_DATE, USER_EMAIL
+  				)
+  		VALUES
+  			(
+  				#{reviewSeq}, #{prodId}, #{reviewContent}, SYSDATE, #{reviewStatus}, #{reviewRating}, SYSDATE, #{userEmail}
+  			)
+  		
+	</insert>
+	
+	<select id="reviewListSelect" parameterType="string" resultMap="reviewResultMap">
+		SELECT
+		    REVIEW_SEQ, 
+		    PROD_ID, 
+		    NVL(REVIEW_CONTENT, '') REVIEW_CONTENT,
+		    NVL(REVIEW_DATE, '') REVIEW_DATE,
+		    NVL(REVIEW_STATUS, '') REVIEW_STATUS,
+		    NVL(REVIEW_RATING, '') REVIEW_RATING,
+		    NVL(REVIEW_UPDATE_DATE, '') REVIEW_UPDATE_DATE,
+		    NVL(A.USER_EMAIL, '') USER_EMAIL,
+		    NVL(B.USER_NAME, '') USER_NAME
+		FROM
+		    REVIEW A, TBL_USER B
+		WHERE
+		    A.USER_EMAIL = B.USER_EMAIL
+		    AND REVIEW_STATUS = 'Y'
+		    AND PROD_ID = #{value}
+		ORDER BY
+		    REVIEW_SEQ DESC
+	</select>
+	
+	<select id="ratingAvg" parameterType="string" resultType="long">
+		SELECT
+			COALESCE(AVG(REVIEW_RATING), 0)
+		FROM 
+			REVIEW
+		WHERE
+			PROD_ID = #{value}
+	</select>
+	
+	<select id="reviewCount" parameterType="string" resultType="long">
+		SELECT
+			COUNT(PROD_ID)
+		FROM
+			REVIEW
+		WHERE
+			REVIEW_STATUS = 'Y'
+			AND PROD_ID = #{value}
+	</select>
+	
+	<insert id="reviewImgInsert" parameterType="com.sist.web.model.ReviewImg">
+		<selectKey resultType="long" keyProperty="reviewImgNum" order="BEFORE">
+  			SELECT 
+  				NVL(MAX(REVIEW_IMG_NUM), 0) + 1 AS REVIEW_IMG_NUM
+			FROM 
+				REVIEW_IMG
+			WHERE
+			    REVIEW_SEQ = #{reviewSeq}
+  		</selectKey>
+  		
+		INSERT INTO 
+			REVIEW_IMG 
+			(
+			    REVIEW_IMG_NUM,
+			    REVIEW_SEQ,
+			    USER_EMAIL,
+			    REVIEW_IMG_ORG_NAME,
+			    REVIEW_IMG_NAME,
+			    REVIEW_IMG_SIZE,
+			    REVIEW_IMG_EXT,
+			    REG_DATE
+			) 
+		VALUES 
+		(
+			#{reviewImgNum}, #{reviewSeq}, #{userEmail}, #{reviewImgOrgName}, #{reviewImgName}, #{reviewImgSize}, #{reviewImgExt}, SYSDATE	
+		)
+	</insert>
+	
+	<select id="reviewSelect" parameterType="long" resultMap="reviewResultMap">
+		SELECT
+			REVIEW_SEQ,
+			PROD_ID,
+			REVIEW_CONTENT,
+			REVIEW_DATE,
+			REVIEW_STATUS,
+			REVIEW_RATING,
+			REVIEW_UPDATE_DATE,
+			USER_EMAIL
+		FROM
+			REVIEW
+		WHERE
+			REVIEW_SEQ = #{reviewSeq}
+	</select>
+	
+	<update id="reviewDelete" parameterType="com.sist.web.model.Review">
+		UPDATE 
+			REVIEW 
+		SET 
+			REVIEW_STATUS = 'N' 
+		WHERE 
+			REVIEW_SEQ = #{reviewSeq}
+			AND PROD_ID = #{prodId}
+			AND USER_EMAIL = #{userEmail}
+	</update>
+	
+	<update id="reviewUpdate" parameterType="com.sist.web.model.Review">
+		UPDATE
+			REVIEW
+		SET
+			REVIEW_CONTENT = #{reviewContent},
+			REVIEW_RATING = #{reviewRating},
+			REVIEW_UPDATE_DATE = SYSDATE
+		WHERE
+			REVIEW_SEQ = #{reviewSeq}
+			AND PROD_ID = #{prodId}
+			AND USER_EMAIL = #{userEmail}
+	</update>
+	
+	<delete id="reviewImgDelete" parameterType="com.sist.web.model.ReviewImg">
+		DELETE 
+		FROM
+			REVIEW_IMG
+		WHERE
+			REVIEW_IMG_NUM = #{reviewImgNum}
+			AND REVIEW_SEQ = #{reviewSeq}
+			AND USER_EMAIL = #{userEmail}
+	</delete>
+	
+	<select id="reviewImgSelect" parameterType="long" resultMap="reviewImgResultMap">
+	
+		SELECT
+		    REVIEW_IMG_NUM,
+		    REVIEW_SEQ,
+		    USER_EMAIL,
+		    REVIEW_IMG_ORG_NAME,
+		    REVIEW_IMG_NAME,
+		    REVIEW_IMG_SIZE,
+		    REVIEW_IMG_EXT,
+		    REG_DATE
+		FROM
+		    REVIEW_IMG
+		WHERE
+		    REVIEW_SEQ = #{value}
+	
+	</select>
+	
+	<select id="getReviewSeq" resultType="long">
+		SELECT MAX(REVIEW_SEQ) + 1 FROM REVIEW
+	</select>
+	
+</mapper>

@@ -1,0 +1,784 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.OrderDao">
+      
+    <resultMap id="orderResultMap" type="com.sist.web.model.Order">
+        <id property="orderId" column="ORDER_ID" />
+        <result property="shippingAddrNum" column="SHIPPING_ADDR_NUM" />
+        <result property="userEmail" column="USER_EMAIL" />
+        <result property="orderStatus" column="ORDER_STATUS" />
+        <result property="orderSumPrice" column="ORDER_SUM_PRICE" />
+        <result property="orderTotalPrice" column="ORDER_TOTAL_PRICE" />
+        <result property="orderDiscountRate" column="ORDER_DISCOUNT_RATE" />
+        <result property="orderShippingCost" column="ORDER_SHIPPING_COST" />
+        <result property="regDate" column="REG_DATE" />
+        <result property="paymentType" column="PAYMENT_TYPE" />
+        <result property="shippingMemo" column="SHIPPING_MEMO" />   
+    </resultMap>
+    
+    <resultMap id="paymentResultMap" type="com.sist.web.model.Payment">
+        <id property="orderId" column="ORDER_ID" />
+        <result property="paymentAmount" column="PAYMENT_AMOUNT" />
+        <result property="paymentMethod" column="PAYMENT_METHOD" />
+        <result property="paymentStatus" column="PAYMENT_STATUS" />
+        <result property="regDate" column="REG_DATE" />
+        <result property="paymentCode" column="PAYMENT_CODE" />
+    </resultMap>
+    
+    <resultMap id="orderProdResultMap" type="com.sist.web.model.OrderProd">
+        <id property="orderId" column="ORDER_ID" />
+        <id property="variantsOptionValueCombId" column="VARIANTS_OPTION_VALUE_COMB_ID" />
+        <id property="prodId" column="PROD_ID" />
+        <result property="orderProdQuantity" column="ORDER_PROD_QUANTITY" />
+        <result property="orderProdPrice" column="ORDER_PROD_PRICE" />
+        <result property="orderProdDiscountPercent" column="ORDER_PROD_DISCOUNT_PERCENT" />
+        <result property="orderProdName" column="ORDER_PROD_NAME" />
+        <result property="isCanceled" column="IS_CANCELED" />
+        <result property="isRefunded" column="IS_REFUNDED" />
+        <result property="isExchanged" column="IS_EXCHANGED" />
+        <result property="variantsOptionValueCombText" column="VARIANTS_OPTION_VALUE_COMB_TEXT" />
+        <result property="discountedOrderProdPrice" column="DISCOUNTED_ORDER_PROD_PRICE" />
+    </resultMap>
+    
+    <resultMap id="refundProdResultMap" type="com.sist.web.model.RefundProd">
+        <id property="orderId" column="ORDER_ID" />
+        <id property="variantsOptionValueCombId" column="VARIANTS_OPTION_VALUE_COMB_ID" />
+        <id property="prodId" column="PROD_ID" />
+        <id property="refundNum" column="REFUND_NUM" />
+        <result property="refundProdQuantity" column="REFUND_PROD_QUANTITY" />
+        <result property="refundProdPrice" column="REFUND_PROD_PRICE" />
+        <result property="refundProdDiscountPercent" column="REFUND_PROD_DISCOUNT_PERCENT" />
+        <result property="refundProdName" column="REFUND_PROD_NAME" />
+        <result property="variantsOptionValueCombText" column="VARIANTS_OPTION_VALUE_COMB_TEXT" />
+        <result property="discountedRefundProdPrice" column="DISCOUNTED_REFUND_PROD_PRICE" />
+    </resultMap>
+    
+    <resultMap id="orderWithProductsResultMap" type="com.sist.web.model.Order">
+        <id property="orderId" column="ORDER_ID" />
+        <result property="shippingAddrNum" column="SHIPPING_ADDR_NUM" />
+        <result property="userEmail" column="USER_EMAIL" />
+        <result property="orderStatus" column="ORDER_STATUS" />
+        <result property="orderSumPrice" column="ORDER_SUM_PRICE" />
+        <result property="orderTotalPrice" column="ORDER_TOTAL_PRICE" />
+        <result property="orderDiscountRate" column="ORDER_DISCOUNT_RATE" />
+        <result property="orderShippingCost" column="ORDER_SHIPPING_COST" />
+        <result property="regDate" column="REG_DATE" />
+        <result property="paymentType" column="PAYMENT_TYPE" />
+        <result property="shippingMemo" column="SHIPPING_MEMO" />
+        <result property="variantsOptionValueCombText" column="VARIANTS_OPTION_VALUE_COMB_TEXT" />
+        <result property="paymentAmount" column="PAYMENT_AMOUNT" />
+        <result property="paymentMethod" column="PAYMENT_METHOD" />
+        <result property="shippingAddrLine1" column="SHIPPING_ADDR_LINE1" />
+        <result property="shippingAddrLine2" column="SHIPPING_ADDR_LINE2" />
+        <result property="shippingAddrZipcode" column="SHIPPING_ADDR_ZIPCODE" />
+        <result property="recipientTel" column="RECIPIENT_TEL" />
+        <result property="recipientName" column="RECIPIENT_NAME" />
+        <result property="variantsOptionValueCombId" column="VARIANTS_OPTION_VALUE_COMB_ID" />
+        <result property="prodId" column="PROD_ID" />
+        <result property="orderProdQuantity" column="ORDER_PROD_QUANTITY" />
+        <result property="orderProdPrice" column="ORDER_PROD_PRICE" />
+        <result property="orderProdDiscountPercent" column="ORDER_PROD_DISCOUNT_PERCENT" />
+        <result property="orderProdName" column="ORDER_PROD_NAME" />
+        <result property="isCanceled" column="IS_CANCELED" />
+        <result property="isRefunded" column="IS_REFUNDED" />
+        <result property="isExchanged" column="IS_EXCHANGED" />
+        <result property="prodMainCateId" column="PROD_MAIN_CATE_ID" />
+    </resultMap>
+    
+      
+    <select id="orderEndList" parameterType="com.sist.web.model.Order" resultMap="orderWithProductsResultMap">
+		SELECT
+		    ORDER_ID,
+		    USER_EMAIL,
+		    ORDER_STATUS,
+		    ORDER_SUM_PRICE,
+		    ORDER_TOTAL_PRICE,
+		    ORDER_DISCOUNT_RATE,
+		    REG_DATE,
+		    PROD_ID,
+		    ORDER_PROD_QUANTITY,
+		    ORDER_PROD_PRICE,
+		    ORDER_PROD_DISCOUNT_PERCENT,
+		    ORDER_PROD_NAME,
+		    IS_CANCELED,
+		    IS_REFUNDED,
+		    IS_EXCHANGED,
+		    VARIANTS_OPTION_VALUE_COMB_TEXT,
+		    PAYMENT_AMOUNT,
+		    PAYMENT_METHOD,
+		    PROD_MAIN_CATE_ID
+		FROM (
+		    SELECT
+		        ROWNUM RNUM,
+		        ORDER_ID,
+		        USER_EMAIL,
+		        ORDER_STATUS,
+		        ORDER_SUM_PRICE,
+		        ORDER_TOTAL_PRICE,
+		        ORDER_DISCOUNT_RATE,
+		        REG_DATE,
+		        PROD_ID,
+		        ORDER_PROD_QUANTITY,
+		        ORDER_PROD_PRICE,
+		        ORDER_PROD_DISCOUNT_PERCENT,
+		        ORDER_PROD_NAME,
+		        IS_CANCELED,
+		        IS_REFUNDED,
+		        IS_EXCHANGED,
+		        VARIANTS_OPTION_VALUE_COMB_TEXT,
+		        PAYMENT_AMOUNT,
+		        PAYMENT_METHOD,
+		        PROD_MAIN_CATE_ID
+		    FROM (
+		        SELECT
+		            A.ORDER_ID ORDER_ID,
+		            NVL(A.USER_EMAIL, '') USER_EMAIL,
+		            NVL(A.ORDER_STATUS, '') ORDER_STATUS,
+		            NVL(A.ORDER_SUM_PRICE, '') ORDER_SUM_PRICE,
+		            NVL(A.ORDER_TOTAL_PRICE, '') ORDER_TOTAL_PRICE,
+		            NVL(A.ORDER_DISCOUNT_RATE, '') ORDER_DISCOUNT_RATE,
+		            NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD'), '') REG_DATE,
+		            NVL(B.PROD_ID, '') PROD_ID,
+		            NVL(B.ORDER_PROD_QUANTITY, '') ORDER_PROD_QUANTITY,
+		            NVL(B.ORDER_PROD_PRICE, '') ORDER_PROD_PRICE,
+		            NVL(B.ORDER_PROD_DISCOUNT_PERCENT, '') ORDER_PROD_DISCOUNT_PERCENT,
+		            NVL(B.ORDER_PROD_NAME, '') ORDER_PROD_NAME,
+		            NVL(B.IS_CANCELED, '') IS_CANCELED,
+		            NVL(B.IS_REFUNDED, '') IS_REFUNDED,
+		            NVL(B.IS_EXCHANGED, '') IS_EXCHANGED,
+		            NVL(E.VARIANTS_OPTION_VALUE_COMB_TEXT, '') VARIANTS_OPTION_VALUE_COMB_TEXT,
+		            CASE WHEN C.ORDER_ID IS NOT NULL THEN C.PAYMENT_AMOUNT ELSE NULL END AS PAYMENT_AMOUNT,
+		            CASE WHEN C.ORDER_ID IS NOT NULL THEN C.PAYMENT_METHOD ELSE NULL END AS PAYMENT_METHOD,
+		            NVL(G.PROD_MAIN_CATE_ID, '') PROD_MAIN_CATE_ID
+		        FROM
+		            TBL_ORDER A
+		            JOIN ORDER_PROD B ON A.ORDER_ID = B.ORDER_ID
+		            LEFT JOIN PAYMENT C ON A.ORDER_ID = C.ORDER_ID 
+		            JOIN TBL_USER D ON A.USER_EMAIL = D.USER_EMAIL
+		            JOIN VARIANTS_OPTION_VALUE_COMB E ON B.PROD_ID = E.PROD_ID AND B.VARIANTS_OPTION_VALUE_COMB_ID = E.VARIANTS_OPTION_VALUE_COMB_ID
+		            JOIN PROD F ON F.PROD_ID = B.PROD_ID
+		            JOIN PROD_SUB_CATE G ON F.PROD_SUB_CATE_COMBINED_ID = G.PROD_SUB_CATE_COMBINED_ID
+		        WHERE
+		            A.USER_EMAIL = #{userEmail}
+		            AND A.ORDER_STATUS NOT IN ('결제 대기')
+		        ORDER BY
+		            A.ORDER_ID DESC, B.PROD_ID DESC))
+			WHERE
+			    RNUM <![CDATA[ >= ]]> #{startRow}
+				AND RNUM <![CDATA[ <= ]]> #{endRow}
+    </select>
+    
+    <select id="orderDetail" parameterType="com.sist.web.model.Order" resultMap="orderWithProductsResultMap">
+       SELECT
+           A.ORDER_ID ORDER_ID,
+           A.SHIPPING_ADDR_NUM SHIPPING_ADDR_NUM,
+           A.USER_EMAIL USER_EMAIL,
+           A.ORDER_STATUS ORDER_STATUS,
+           A.ORDER_SUM_PRICE ORDER_SUM_PRICE,
+           A.ORDER_TOTAL_PRICE ORDER_TOTAL_PRICE,
+           A.ORDER_DISCOUNT_RATE ORDER_DISCOUNT_RATE,
+           A.ORDER_SHIPPING_COST ORDER_SHIPPING_COST,
+           NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD'), '') REG_DATE,
+           A.PAYMENT_TYPE PAYMENT_TYPE,
+           A.SHIPPING_MEMO SHIPPING_MEMO,
+           B.VARIANTS_OPTION_VALUE_COMB_ID VARIANTS_OPTION_VALUE_COMB_ID,
+           B.PROD_ID PROD_ID,
+           B.ORDER_PROD_QUANTITY ORDER_PROD_QUANTITY,
+           B.ORDER_PROD_PRICE ORDER_PROD_PRICE,
+           B.ORDER_PROD_DISCOUNT_PERCENT ORDER_PROD_DISCOUNT_PERCENT,
+           B.ORDER_PROD_NAME ORDER_PROD_NAME,
+           B.IS_CANCELED IS_CANCELED,
+           B.IS_REFUNDED IS_REFUNDED,
+           B.IS_EXCHANGED IS_EXCHANGED,
+           E.VARIANTS_OPTION_VALUE_COMB_TEXT VARIANTS_OPTION_VALUE_COMB_TEXT,
+           CASE WHEN C.ORDER_ID IS NOT NULL THEN C.PAYMENT_AMOUNT ELSE NULL END AS PAYMENT_AMOUNT,
+           CASE WHEN C.ORDER_ID IS NOT NULL THEN C.PAYMENT_METHOD ELSE NULL END AS PAYMENT_METHOD,
+           F.SHIPPING_ADDR_LINE1 SHIPPING_ADDR_LINE1,
+           F.SHIPPING_ADDR_LINE2 SHIPPING_ADDR_LINE2,
+           F.SHIPPING_ADDR_ZIPCODE SHIPPING_ADDR_ZIPCODE,
+           F.RECIPIENT_TEL RECIPIENT_TEL,
+           F.RECIPIENT_NAME RECIPIENT_NAME,
+           H.PROD_MAIN_CATE_ID PROD_MAIN_CATE_ID
+       FROM
+           TBL_ORDER A
+           JOIN ORDER_PROD B ON A.ORDER_ID = B.ORDER_ID
+           JOIN TBL_USER D ON A.USER_EMAIL = D.USER_EMAIL
+           JOIN VARIANTS_OPTION_VALUE_COMB E ON B.PROD_ID = E.PROD_ID AND B.VARIANTS_OPTION_VALUE_COMB_ID = E.VARIANTS_OPTION_VALUE_COMB_ID
+           JOIN SHIPPING_ADDR F ON A.SHIPPING_ADDR_NUM = F.SHIPPING_ADDR_NUM AND D.USER_EMAIL = F.USER_EMAIL
+           JOIN PROD G ON G.PROD_ID = B.PROD_ID
+           JOIN PROD_SUB_CATE H ON G.PROD_SUB_CATE_COMBINED_ID = H.PROD_SUB_CATE_COMBINED_ID
+           LEFT JOIN PAYMENT C ON A.ORDER_ID = C.ORDER_ID
+       WHERE
+           A.USER_EMAIL = #{userEmail}
+           AND A.ORDER_ID = #{orderId}
+    </select>
+    
+    <select id="orderEndCount" parameterType="String" resultType="long">
+        SELECT
+            COUNT(ORDER_ID) ORDER_ID
+        FROM
+            TBL_ORDER 
+        WHERE
+            USER_EMAIL = #{value}
+            AND ORDER_STATUS NOT IN ('결제 대기')
+    </select>
+    
+    <select id="orderProgressingList" parameterType="com.sist.web.model.Order" resultMap="orderWithProductsResultMap">
+		SELECT
+		    ORDER_ID,
+		    USER_EMAIL,
+		    ORDER_STATUS,
+		    ORDER_SUM_PRICE,
+		    ORDER_TOTAL_PRICE,
+		    ORDER_DISCOUNT_RATE,
+		    REG_DATE,
+		    PROD_ID,
+		    ORDER_PROD_QUANTITY,
+		    ORDER_PROD_PRICE,
+		    ORDER_PROD_DISCOUNT_PERCENT,
+		    ORDER_PROD_NAME,
+		    IS_CANCELED,
+		    IS_REFUNDED,
+		    IS_EXCHANGED,
+		    VARIANTS_OPTION_VALUE_COMB_TEXT,
+		    PROD_MAIN_CATE_ID
+		FROM (
+		    SELECT
+		        ROWNUM RNUM,
+		        ORDER_ID,
+		        USER_EMAIL,
+		        ORDER_STATUS,
+		        ORDER_SUM_PRICE,
+		        ORDER_TOTAL_PRICE,
+		        ORDER_DISCOUNT_RATE,
+		        REG_DATE,
+		        PROD_ID,
+		        ORDER_PROD_QUANTITY,
+		        ORDER_PROD_PRICE,
+		        ORDER_PROD_DISCOUNT_PERCENT,
+		        ORDER_PROD_NAME,
+		        IS_CANCELED,
+		        IS_REFUNDED,
+		        IS_EXCHANGED,
+		        VARIANTS_OPTION_VALUE_COMB_TEXT,
+		        PROD_MAIN_CATE_ID
+		    FROM (
+		        SELECT
+		            A.ORDER_ID ORDER_ID,
+		            NVL(A.USER_EMAIL, '') USER_EMAIL,
+		            NVL(A.ORDER_STATUS, '') ORDER_STATUS,
+		            NVL(A.ORDER_SUM_PRICE, '') ORDER_SUM_PRICE,
+		            NVL(A.ORDER_TOTAL_PRICE, '') ORDER_TOTAL_PRICE,
+		            NVL(A.ORDER_DISCOUNT_RATE, '') ORDER_DISCOUNT_RATE,
+		            NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD'), '') REG_DATE,
+		            NVL(B.PROD_ID, '') PROD_ID,
+		            NVL(B.ORDER_PROD_QUANTITY, '') ORDER_PROD_QUANTITY,
+		            NVL(B.ORDER_PROD_PRICE, '') ORDER_PROD_PRICE,
+		            NVL(B.ORDER_PROD_DISCOUNT_PERCENT, '') ORDER_PROD_DISCOUNT_PERCENT,
+		            NVL(B.ORDER_PROD_NAME, '') ORDER_PROD_NAME,
+		            NVL(B.IS_CANCELED, '') IS_CANCELED,
+		            NVL(B.IS_REFUNDED, '') IS_REFUNDED,
+		            NVL(B.IS_EXCHANGED, '') IS_EXCHANGED,
+		            NVL(D.VARIANTS_OPTION_VALUE_COMB_TEXT, '') VARIANTS_OPTION_VALUE_COMB_TEXT,
+		            NVL(F.PROD_MAIN_CATE_ID, '') PROD_MAIN_CATE_ID
+		        FROM
+		            TBL_ORDER A
+		            JOIN ORDER_PROD B ON A.ORDER_ID = B.ORDER_ID
+		            JOIN TBL_USER C ON A.USER_EMAIL = C.USER_EMAIL
+		            JOIN VARIANTS_OPTION_VALUE_COMB D ON B.PROD_ID = D.PROD_ID 
+		                                              AND B.VARIANTS_OPTION_VALUE_COMB_ID = D.VARIANTS_OPTION_VALUE_COMB_ID
+		            JOIN PROD E ON E.PROD_ID = B.PROD_ID
+		            JOIN PROD_SUB_CATE F ON E.PROD_SUB_CATE_COMBINED_ID = F.PROD_SUB_CATE_COMBINED_ID
+		        WHERE
+		            A.ORDER_STATUS IN('결제 대기')
+		            AND A.USER_EMAIL = #{userEmail}
+		        ORDER BY
+		            A.ORDER_ID DESC, B.PROD_ID DESC))
+			WHERE
+			    RNUM <![CDATA[ >= ]]> #{startRow}
+				AND RNUM <![CDATA[ <= ]]> #{endRow}
+    </select>
+    
+    <select id="orderProgressingCount" parameterType="String" resultType="long">
+        SELECT
+            COUNT(ORDER_ID)
+        FROM
+            TBL_ORDER 
+        WHERE
+            USER_EMAIL = #{value}
+            AND ORDER_STATUS IN('결제 대기')
+    </select>
+    
+    <select id="orderAllList" parameterType="com.sist.web.model.Order" resultMap="orderWithProductsResultMap">
+		SELECT
+		    ORDER_ID,
+		    USER_EMAIL,
+		    ORDER_STATUS,
+		    ORDER_SUM_PRICE,
+		    ORDER_TOTAL_PRICE,
+		    ORDER_DISCOUNT_RATE,
+		    REG_DATE,
+		    PROD_ID,
+		    ORDER_PROD_QUANTITY,
+		    ORDER_PROD_PRICE,
+		    ORDER_PROD_DISCOUNT_PERCENT,
+		    ORDER_PROD_NAME,
+		    IS_CANCELED,
+		    IS_REFUNDED,
+		    IS_EXCHANGED,
+		    VARIANTS_OPTION_VALUE_COMB_TEXT,
+		    PROD_MAIN_CATE_ID
+		FROM (
+		    SELECT
+		        ROWNUM RNUM,
+		        ORDER_ID,
+		        USER_EMAIL,
+		        ORDER_STATUS,
+		        ORDER_SUM_PRICE,
+		        ORDER_TOTAL_PRICE,
+		        ORDER_DISCOUNT_RATE,
+		        REG_DATE,
+		        PROD_ID,
+		        ORDER_PROD_QUANTITY,
+		        ORDER_PROD_PRICE,
+		        ORDER_PROD_DISCOUNT_PERCENT,
+		        ORDER_PROD_NAME,
+		        IS_CANCELED,
+		        IS_REFUNDED,
+		        IS_EXCHANGED,
+		        VARIANTS_OPTION_VALUE_COMB_TEXT,
+		        PROD_MAIN_CATE_ID
+		    FROM (
+		        SELECT 
+		            A.ORDER_ID,
+		            NVL(A.USER_EMAIL, '') USER_EMAIL,
+		            NVL(A.ORDER_STATUS, '') ORDER_STATUS,
+		            NVL(A.ORDER_SUM_PRICE, '') ORDER_SUM_PRICE,
+		            NVL(A.ORDER_TOTAL_PRICE, '') ORDER_TOTAL_PRICE,
+		            NVL(A.ORDER_DISCOUNT_RATE, '') ORDER_DISCOUNT_RATE,
+		            NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD'), '') REG_DATE,
+		            NVL(B.PROD_ID, '') PROD_ID,
+		            NVL(B.ORDER_PROD_QUANTITY, '') ORDER_PROD_QUANTITY,
+		            NVL(B.ORDER_PROD_PRICE, '') ORDER_PROD_PRICE,
+		            NVL(B.ORDER_PROD_DISCOUNT_PERCENT, '') ORDER_PROD_DISCOUNT_PERCENT,
+		            NVL(B.ORDER_PROD_NAME, '') ORDER_PROD_NAME,
+		            NVL(B.IS_CANCELED, '') IS_CANCELED,
+		            NVL(B.IS_REFUNDED, '') IS_REFUNDED,
+		            NVL(B.IS_EXCHANGED, '') IS_EXCHANGED,
+		            NVL(D.VARIANTS_OPTION_VALUE_COMB_TEXT, '') VARIANTS_OPTION_VALUE_COMB_TEXT,
+		            NVL(F.PROD_MAIN_CATE_ID, '') PROD_MAIN_CATE_ID
+		        FROM
+		            TBL_ORDER A
+		            JOIN ORDER_PROD B ON A.ORDER_ID = B.ORDER_ID
+		            JOIN TBL_USER C ON A.USER_EMAIL = C.USER_EMAIL
+		            JOIN VARIANTS_OPTION_VALUE_COMB D ON B.PROD_ID = D.PROD_ID AND B.VARIANTS_OPTION_VALUE_COMB_ID = D.VARIANTS_OPTION_VALUE_COMB_ID
+		            JOIN PROD E ON E.PROD_ID = B.PROD_ID
+		            JOIN PROD_SUB_CATE F ON E.PROD_SUB_CATE_COMBINED_ID = F.PROD_SUB_CATE_COMBINED_ID
+		        WHERE
+		            A.USER_EMAIL = #{userEmail}
+		            <if test='searchValue != null and searchValue != ""'>
+		                AND A.ORDER_STATUS LIKE '%' || #{searchValue} || '%'
+		            </if>
+		        ORDER BY
+		            A.ORDER_ID DESC, B.PROD_ID DESC))
+			WHERE
+			    RNUM <![CDATA[ >= ]]> #{startRow}
+				AND RNUM <![CDATA[ <= ]]> #{endRow}
+    </select>
+    
+    <select id="orderAllCount" parameterType="String" resultType="long">
+        SELECT
+            COUNT(ORDER_ID)
+        FROM
+            TBL_ORDER 
+        WHERE
+            USER_EMAIL = #{value}
+    </select>
+    
+    <insert id="orderInsert" parameterType="com.sist.web.model.Order">
+        <selectKey keyProperty="orderId" resultType="string" order="BEFORE">
+            SELECT GENERATE_ORDER_ID() AS orderId FROM DUAL
+        </selectKey>
+
+        INSERT INTO TBL_ORDER (
+            ORDER_ID,
+            SHIPPING_ADDR_NUM,
+            USER_EMAIL,
+            ORDER_STATUS,
+            ORDER_SUM_PRICE,
+            ORDER_TOTAL_PRICE,
+            ORDER_DISCOUNT_RATE,
+            ORDER_SHIPPING_COST,
+            REG_DATE,
+            PAYMENT_TYPE,
+            SHIPPING_MEMO
+        ) VALUES (
+            #{orderId},
+            #{shippingAddrNum},
+            #{userEmail},
+            '결제 대기',
+            #{orderSumPrice},
+            #{orderTotalPrice},
+            #{orderDiscountRate},
+            #{orderShippingCost},
+            SYSDATE,
+            #{paymentType},
+            #{shippingMemo}
+        )
+    </insert>
+
+    <update id="orderUpdateAfterPaymentInsert" parameterType="java.util.Map">
+        UPDATE TBL_ORDER
+        SET ORDER_STATUS = #{orderStatus}, PAYMENT_TYPE = #{paymentType}
+        WHERE ORDER_ID = #{orderId}
+    </update>   
+    
+    <update id="orderStatusUpdate" parameterType="java.util.Map">
+        UPDATE TBL_ORDER
+        SET ORDER_STATUS = #{orderStatus}
+        WHERE ORDER_ID = #{orderId}
+    </update>   
+    
+    <!-- 재고 감소 -->
+    <update id="variantsOptionValueCombStockMinus" parameterType="com.sist.web.model.Cart">
+        UPDATE VARIANTS_OPTION_VALUE_COMB
+        SET VARIANTS_OPTION_VALUE_COMB_STOCK = VARIANTS_OPTION_VALUE_COMB_STOCK - #{cartQuantity}
+        WHERE 
+            VARIANTS_OPTION_VALUE_COMB_ID = #{variantsOptionValueCombId}
+            AND PROD_ID = #{prodId}
+    </update>
+    
+    <insert id="orderProdInsertAll" parameterType="java.util.List">
+        INSERT ALL
+        <foreach collection="list" item="item">
+            INTO ORDER_PROD (
+                ORDER_ID,
+                PROD_ID,
+                VARIANTS_OPTION_VALUE_COMB_ID,
+                ORDER_PROD_QUANTITY,
+                ORDER_PROD_PRICE,
+                ORDER_PROD_DISCOUNT_PERCENT,
+                ORDER_PROD_NAME,
+                IS_CANCELED,
+                IS_REFUNDED,
+                IS_EXCHANGED
+            ) VALUES (
+                #{item.orderId},
+                #{item.prodId},
+                #{item.variantsOptionValueCombId},
+                #{item.orderProdQuantity},
+                #{item.orderProdPrice},
+                #{item.orderProdDiscountPercent},
+                #{item.orderProdName},
+                'N',
+                'N',
+                'N'
+            )
+        </foreach>
+        SELECT * FROM DUAL
+    </insert>
+    
+    <select id="orderProdList" parameterType="string" resultMap="orderProdResultMap">
+        SELECT 
+            A.ORDER_ID ORDER_ID,
+            A.VARIANTS_OPTION_VALUE_COMB_ID VARIANTS_OPTION_VALUE_COMB_ID,
+            A.PROD_ID PROD_ID,
+            NVL(A.ORDER_PROD_QUANTITY, 1) ORDER_PROD_QUANTITY,
+            NVL(A.ORDER_PROD_PRICE, 0) ORDER_PROD_PRICE,
+            NVL(A.ORDER_PROD_DISCOUNT_PERCENT, 0) ORDER_PROD_DISCOUNT_PERCENT,
+            NVL(A.ORDER_PROD_NAME, '') ORDER_PROD_NAME,
+            NVL(A.IS_CANCELED, 'N') IS_CANCELED,
+            NVL(A.IS_REFUNDED, 'N') IS_REFUNDED,
+            NVL(A.IS_EXCHANGED, 'N') IS_EXCHANGED,
+            NVL(B.VARIANTS_OPTION_VALUE_COMB_TEXT, '') VARIANTS_OPTION_VALUE_COMB_TEXT,
+            CASE 
+                WHEN NVL(A.ORDER_PROD_DISCOUNT_PERCENT, 0) > 0 THEN 
+                    ROUND(A.ORDER_PROD_PRICE * (1 - A.ORDER_PROD_DISCOUNT_PERCENT / 100))  
+                ELSE 
+                    A.ORDER_PROD_PRICE
+            END DISCOUNTED_ORDER_PROD_PRICE
+        FROM 
+            ORDER_PROD A
+        JOIN 
+            VARIANTS_OPTION_VALUE_COMB B
+            ON A.VARIANTS_OPTION_VALUE_COMB_ID = B.VARIANTS_OPTION_VALUE_COMB_ID
+            AND A.PROD_ID = B.PROD_ID
+        WHERE 
+            A.ORDER_ID = #{value}
+    </select>
+    
+    <!-- 제품 금액 총합 -->
+    <select id="getTotalAmount" parameterType="string" resultType="long">
+        SELECT 
+            NVL(SUM(
+                CASE 
+                    WHEN NVL(ORDER_PROD_DISCOUNT_PERCENT, 0) > 0 THEN 
+                        ROUND(ORDER_PROD_PRICE * (1 - ORDER_PROD_DISCOUNT_PERCENT / 100)) * NVL(ORDER_PROD_QUANTITY, 1)  
+                    ELSE 
+                        ORDER_PROD_PRICE * NVL(ORDER_PROD_QUANTITY, 1) 
+                END
+            ), 0) TOTAL_AMOUNT
+        FROM 
+            ORDER_PROD 
+        WHERE 
+            ORDER_ID = #{value}
+            AND IS_REFUNDED = 'N'
+            AND IS_CANCELED = 'N'
+    </select>
+    
+    <!-- 결제 삽입 -->
+    <insert id="paymentInsert" parameterType="com.sist.web.model.Payment">
+        INSERT INTO PAYMENT (
+            ORDER_ID,
+            PAYMENT_AMOUNT,
+            PAYMENT_METHOD,
+            PAYMENT_STATUS,
+            REG_DATE,
+            PAYMENT_CODE
+        ) VALUES (
+            #{orderId},
+            #{paymentAmount},
+            #{paymentMethod},
+            #{paymentStatus},
+            SYSDATE,
+            #{paymentCode}
+        )
+    </insert>
+    
+    <select id="orderSelect" parameterType="string" resultMap="orderResultMap">
+        SELECT
+            ORDER_ID,
+            SHIPPING_ADDR_NUM,
+            USER_EMAIL,
+            NVL(ORDER_STATUS, '') ORDER_STATUS,
+            NVL(ORDER_SUM_PRICE, 0) ORDER_SUM_PRICE,
+            NVL(ORDER_TOTAL_PRICE, 0) ORDER_TOTAL_PRICE,
+            NVL(ORDER_DISCOUNT_RATE, 0) ORDER_DISCOUNT_RATE,
+            NVL(ORDER_SHIPPING_COST, 0) ORDER_SHIPPING_COST,
+            NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE,
+            NVL(PAYMENT_TYPE, '') PAYMENT_TYPE,
+            NVL(SHIPPING_MEMO, '') SHIPPING_MEMO
+        FROM
+            TBL_ORDER
+        WHERE 
+            ORDER_ID = #{value}
+    </select>
+    
+    <!-- 환불 제품 선택한 금액 총합 -->
+    <select id="getTotalProdPrice" parameterType="java.util.Map" resultType="long">
+        SELECT 
+            NVL(SUM(
+                CASE 
+                    WHEN NVL(ORDER_PROD_DISCOUNT_PERCENT, 0) > 0 THEN 
+                        ROUND(ORDER_PROD_PRICE * (1 - ORDER_PROD_DISCOUNT_PERCENT / 100)) * NVL(ORDER_PROD_QUANTITY, 1)  
+                    ELSE 
+                        ORDER_PROD_PRICE * NVL(ORDER_PROD_QUANTITY, 1) 
+                END
+            ), 0) TOTAL_PROD_PRICE
+        FROM ORDER_PROD 
+        WHERE 
+            ORDER_ID = #{orderId}
+            AND IS_REFUNDED = 'N'
+            AND IS_CANCELED = 'N'
+            <if test="prodCombList != null and prodCombList.size() > 0">
+                AND (PROD_ID, VARIANTS_OPTION_VALUE_COMB_ID) IN 
+                <foreach collection="prodCombList" item="item" open="(" separator="," close=")">
+                    (#{item.prodId}, #{item.variantsOptionValueCombId})
+                </foreach>
+            </if>
+     </select>
+     
+     <select id="paymentSelect" parameterType="string" resultMap="paymentResultMap">
+         SELECT
+            ORDER_ID,
+            NVL(PAYMENT_AMOUNT, 0) PAYMENT_AMOUNT,
+            NVL(PAYMENT_METHOD, '') PAYMENT_METHOD,
+            NVL(PAYMENT_STATUS, '') PATMENT_STATUS,
+            NVL(TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS'), '') REG_DATE,
+            NVL(PAYMENT_CODE, '') PAYMENT_CODE
+        FROM 
+            PAYMENT
+        WHERE 
+            ORDER_ID = #{value}
+     </select>
+     
+     <select id="canCancel" parameterType="string" resultType="string">
+        SELECT CASE
+                   WHEN EXISTS (SELECT 1 FROM SHIPPING WHERE ORDER_ID = #{value}) THEN 'NOT_ALLOWED'
+                   ELSE 'ALLOWED'
+               END CAN_CANCEL
+        FROM DUAL
+     </select>
+     
+     <insert id="refundInsert" parameterType="com.sist.web.model.Refund">
+         <selectKey resultType="short" keyProperty="refundNum" order="BEFORE">
+             SELECT NVL(MAX(REFUND_NUM), 0) + 1
+             FROM REFUND
+             WHERE ORDER_ID = #{orderId}
+         </selectKey>
+         
+         INSERT INTO REFUND (
+            REFUND_NUM,
+            ORDER_ID,
+            REFUND_REASON,
+            REFUND_AMOUNT,
+            REG_DATE,
+            REFUND_STATUS
+        ) VALUES (
+            #{refundNum},
+            #{orderId},
+            #{refundReason},
+            #{refundAmount},
+            SYSDATE,
+            #{refundStatus}
+        )
+     </insert>
+     
+    <update id="orderProdIsRefundedUpdate" parameterType="java.util.Map">
+        UPDATE ORDER_PROD
+        SET IS_REFUNDED = 'Y'
+        WHERE ORDER_ID = #{orderId}
+        <if test="prodCombList != null and prodCombList.size() > 0">
+            AND (VARIANTS_OPTION_VALUE_COMB_ID, PROD_ID) IN
+            <foreach collection="prodCombList" item="item" open="(" close=")" separator=",">
+                (#{item.variantsOptionValueCombId}, #{item.prodId})
+            </foreach>
+        </if>
+    </update>
+    
+	<select id="checkAllRefunded" parameterType="string" resultType="int">
+	    SELECT 
+	        COUNT(*) 
+	    FROM 
+	        ORDER_PROD
+	    WHERE 
+	        ORDER_ID = #{orderId} 
+	        AND IS_REFUNDED = 'N'
+	        AND IS_CANCELED = 'N'
+	</select>
+    
+    <update id="paymentStatusUpdate" parameterType="java.util.Map">
+        UPDATE PAYMENT
+        SET PAYMENT_STATUS = #{paymentStatus}
+        WHERE ORDER_ID = #{orderId}
+    </update>
+    
+    <insert id="refundProdInsertAll" parameterType="java.util.List">
+        INSERT ALL 
+        <foreach collection="list" item="item">
+            INTO REFUND_PROD (
+                VARIANTS_OPTION_VALUE_COMB_ID,
+                PROD_ID,
+                REFUND_NUM,
+                ORDER_ID
+            ) VALUES (
+                #{item.variantsOptionValueCombId},
+                #{item.prodId},
+                #{item.refundNum},
+                #{item.orderId}
+            ) 
+        </foreach>
+        SELECT * FROM DUAL
+    </insert>
+    
+    <select id="refundProdList" parameterType="string" resultMap="refundProdResultMap">
+        SELECT 
+            C.ORDER_ID ORDER_ID,
+            C.VARIANTS_OPTION_VALUE_COMB_ID VARIANTS_OPTION_VALUE_COMB_ID,
+            C.PROD_ID PROD_ID,
+            C.REFUND_NUM REFUND_NUM,
+            
+            NVL(A.ORDER_PROD_QUANTITY, 1) REFUND_PROD_QUANTITY,
+            NVL(A.ORDER_PROD_PRICE, 0) REFUND_PROD_PRICE,
+            NVL(A.ORDER_PROD_DISCOUNT_PERCENT, 0) REFUND_PROD_DISCOUNT_PERCENT,
+            NVL(A.ORDER_PROD_NAME, '') REFUND_PROD_NAME,
+            
+            NVL(B.VARIANTS_OPTION_VALUE_COMB_TEXT, '') VARIANTS_OPTION_VALUE_COMB_TEXT,
+            
+            CASE 
+                WHEN NVL(A.ORDER_PROD_DISCOUNT_PERCENT, 0) > 0 THEN 
+                    ROUND(A.ORDER_PROD_PRICE * (1 - A.ORDER_PROD_DISCOUNT_PERCENT / 100))  
+                ELSE 
+                    A.ORDER_PROD_PRICE
+            END DISCOUNTED_REFUND_PROD_PRICE
+        FROM 
+            ORDER_PROD A
+        JOIN 
+            VARIANTS_OPTION_VALUE_COMB B
+            ON A.VARIANTS_OPTION_VALUE_COMB_ID = B.VARIANTS_OPTION_VALUE_COMB_ID
+            AND A.PROD_ID = B.PROD_ID
+        JOIN 
+            REFUND_PROD C
+            ON A.VARIANTS_OPTION_VALUE_COMB_ID = C.VARIANTS_OPTION_VALUE_COMB_ID
+            AND A.PROD_ID = C.PROD_ID 
+            AND A.ORDER_ID = C.ORDER_ID
+        WHERE 
+            A.ORDER_ID = #{value}
+    </select>
+    
+    <update id="variantsOptionValueCombStockPlus" parameterType="com.sist.web.model.RefundProd">
+        UPDATE VARIANTS_OPTION_VALUE_COMB
+        SET VARIANTS_OPTION_VALUE_COMB_STOCK = VARIANTS_OPTION_VALUE_COMB_STOCK + #{refundProdQuantity}
+        WHERE
+            VARIANTS_OPTION_VALUE_COMB_ID = #{variantsOptionValueCombId}
+            AND PROD_ID = #{prodId}
+    </update>
+    
+    <update id="variantsOptionValueCombStockRestore" parameterType="string">
+		UPDATE VARIANTS_OPTION_VALUE_COMB
+		SET VARIANTS_OPTION_VALUE_COMB_STOCK = VARIANTS_OPTION_VALUE_COMB_STOCK + (
+		  SELECT SUM(OP.ORDER_PROD_QUANTITY)
+		  FROM ORDER_PROD OP
+		  WHERE OP.ORDER_ID = #{value} 
+		    AND OP.VARIANTS_OPTION_VALUE_COMB_ID = VARIANTS_OPTION_VALUE_COMB.VARIANTS_OPTION_VALUE_COMB_ID
+		    AND OP.PROD_ID = VARIANTS_OPTION_VALUE_COMB.PROD_ID
+		  GROUP BY OP.VARIANTS_OPTION_VALUE_COMB_ID, OP.PROD_ID
+		)
+		WHERE EXISTS (
+		  SELECT 1
+		  FROM ORDER_PROD OP
+		  WHERE OP.ORDER_ID = #{value}
+		    AND OP.VARIANTS_OPTION_VALUE_COMB_ID = VARIANTS_OPTION_VALUE_COMB.VARIANTS_OPTION_VALUE_COMB_ID
+		    AND OP.PROD_ID = VARIANTS_OPTION_VALUE_COMB.PROD_ID
+		)
+    </update>
+    
+    <update id="orderProdCancel" parameterType="string">
+        UPDATE ORDER_PROD
+        SET IS_CANCELED = 'Y'
+        WHERE ORDER_ID = #{value}
+    </update>
+    
+    <select id="myPageOrder" parameterType="string" resultMap="orderWithProductsResultMap">
+    
+    	SELECT 
+            A.ORDER_ID,
+            NVL(A.USER_EMAIL, '') USER_EMAIL,
+            NVL(A.ORDER_STATUS, '') ORDER_STATUS,
+            NVL(A.ORDER_SUM_PRICE, '') ORDER_SUM_PRICE,
+            NVL(A.ORDER_TOTAL_PRICE, '') ORDER_TOTAL_PRICE,
+            NVL(A.ORDER_DISCOUNT_RATE, '') ORDER_DISCOUNT_RATE,
+            NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD'), '') REG_DATE,
+            NVL(B.PROD_ID, '') PROD_ID,
+            NVL(B.ORDER_PROD_QUANTITY, '') ORDER_PROD_QUANTITY,
+            NVL(B.ORDER_PROD_PRICE, '') ORDER_PROD_PRICE,
+            NVL(B.ORDER_PROD_DISCOUNT_PERCENT, '') ORDER_PROD_DISCOUNT_PERCENT,
+            NVL(B.ORDER_PROD_NAME, '') ORDER_PROD_NAME,
+            NVL(B.IS_CANCELED, '') IS_CANCELED,
+            NVL(B.IS_REFUNDED, '') IS_REFUNDED,
+            NVL(B.IS_EXCHANGED, '') IS_EXCHANGED,
+            NVL(D.VARIANTS_OPTION_VALUE_COMB_TEXT, '') VARIANTS_OPTION_VALUE_COMB_TEXT,
+            NVL(F.PROD_MAIN_CATE_ID, '') PROD_MAIN_CATE_ID
+        FROM
+            TBL_ORDER A
+            JOIN ORDER_PROD B ON A.ORDER_ID = B.ORDER_ID
+            JOIN TBL_USER C ON A.USER_EMAIL = C.USER_EMAIL
+            JOIN VARIANTS_OPTION_VALUE_COMB D ON B.PROD_ID = D.PROD_ID AND B.VARIANTS_OPTION_VALUE_COMB_ID = D.VARIANTS_OPTION_VALUE_COMB_ID
+            JOIN PROD E ON E.PROD_ID = B.PROD_ID
+            JOIN PROD_SUB_CATE F ON E.PROD_SUB_CATE_COMBINED_ID = F.PROD_SUB_CATE_COMBINED_ID
+        WHERE
+            A.USER_EMAIL = #{userEmail}
+    		
+    
+    </select>
+</mapper>

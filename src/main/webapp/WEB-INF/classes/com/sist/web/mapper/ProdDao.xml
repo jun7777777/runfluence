@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.sist.web.dao.ProdDao">
+
+	<resultMap type="com.sist.web.model.Prod" id="prodResultMap">
+	    <id property="prodId" column="PROD_ID" />
+	    <result property="prodSubCateCombinedId" column="PROD_SUB_CATE_COMBINED_ID" />
+	    <result property="prodName" column="PROD_NAME" />
+	    <result property="prodPrice" column="PROD_PRICE" />
+	    <result property="prodDiscountPercent" column="PROD_DISCOUNT_PERCENT" />
+	    <result property="prodInfo" column="PROD_INFO" />
+	    <result property="prodStatus" column="PROD_STATUS" />
+	    <result property="regDate" column="REG_DATE" />
+	    <result property="userEmail" column="USER_EMAIL"/>
+	    <result property="prodMainCateId" column="PROD_MAIN_CATE_ID"/>
+	</resultMap>
+	
+	<resultMap type="com.sist.web.model.VariantsOptionValueComb" id="combResultMap">
+	    <id property="combId" column="VARIANTS_OPTION_VALUE_COMB_ID" />
+	    <result property="prodId" column="PROD_ID" />
+	    <result property="stock" column="VARIANTS_OPTION_VALUE_COMB_STOCK" />
+	    <result property="combText" column="VARIANTS_OPTION_VALUE_COMB_TEXT" />
+	</resultMap>
+	
+	<resultMap type="com.sist.web.model.VariantsOptionValue" id="valueOptionResultMap">
+	    <id property="vauleId" column="VARIANTS_OPTION_VALUE_ID" />
+	    <result property="varOptionId" column="VARIANTS_OPTION_ID" />
+	    <result property="varOptionName" column="VARIANTS_OPTION_VALUE_NAME" />
+	</resultMap>
+	
+	<select id="prodList" parameterType="com.sist.web.model.Prod" resultMap="prodResultMap">
+		SELECT
+		    PROD_ID,
+		    PROD_SUB_CATE_COMBINED_ID,
+		    PROD_NAME,
+		    PROD_PRICE,
+		    PROD_DISCOUNT_PERCENT,
+		    PROD_INFO,
+		    PROD_STATUS,
+		    REG_DATE,
+		    PROD_MAIN_CATE_ID,
+		    PROD_MAIN_CATE_NAME,
+		    PROD_SUB_CATE_ID,
+		    PROD_SUB_CATE_NAME,
+		    HEART
+		FROM (
+		    SELECT
+		        ROWNUM RNUM,
+		        PROD_ID,
+		        PROD_SUB_CATE_COMBINED_ID,
+		        PROD_NAME,
+		        PROD_PRICE,
+		        PROD_DISCOUNT_PERCENT,
+		        PROD_INFO,
+		        PROD_STATUS,
+		        REG_DATE,
+		        PROD_MAIN_CATE_ID,
+		        PROD_MAIN_CATE_NAME,
+		        PROD_SUB_CATE_ID,
+		        PROD_SUB_CATE_NAME,
+		        HEART
+		    FROM (   
+		        SELECT
+		            A.PROD_ID,
+		            NVL(A.PROD_SUB_CATE_COMBINED_ID, '') PROD_SUB_CATE_COMBINED_ID,
+		            NVL(A.PROD_NAME, '') PROD_NAME,
+		            NVL(A.PROD_PRICE, 0) PROD_PRICE,
+		            NVL(A.PROD_DISCOUNT_PERCENT, 0) PROD_DISCOUNT_PERCENT,
+		            NVL(A.PROD_INFO, '') PROD_INFO,
+		            NVL(A.PROD_STATUS, '') PROD_STATUS,
+		            NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS REG_DATE,
+		            NVL(C.PROD_MAIN_CATE_ID, '') PROD_MAIN_CATE_ID,
+		            NVL(B.PROD_MAIN_CATE_NAME, '') PROD_MAIN_CATE_NAME,
+		            NVL(C.PROD_SUB_CATE_ID, '') PROD_SUB_CATE_ID,
+		            NVL(C.PROD_SUB_CATE_NAME, '') PROD_SUB_CATE_NAME,
+		            CASE 
+			            WHEN EXISTS (
+			                SELECT 1 
+			                FROM WISHLIST W
+			                WHERE W.PROD_ID = A.PROD_ID 
+			                  AND W.USER_EMAIL = #{userEmail}
+			            ) THEN 'Y'
+			        ELSE 'N'
+			    END AS HEART
+		        FROM
+		            PROD A, PROD_MAIN_CATE B, PROD_SUB_CATE C
+				WHERE
+					A.PROD_SUB_CATE_COMBINED_ID = C.PROD_SUB_CATE_COMBINED_ID
+		            AND B.PROD_MAIN_CATE_ID = C.PROD_MAIN_CATE_ID
+				<if test='cateId != null and cateId != ""'>
+		            AND C.PROD_MAIN_CATE_ID LIKE '%' || #{cateId} || '%'
+				</if>
+				
+				<if test='searchValue != null and searchValue != ""'>
+					AND (A.PROD_NAME LIKE '%' || #{searchValue} || '%'
+					OR A.PROD_ID IN (
+		                SELECT
+		                    X.PROD_ID
+		                FROM
+		                    PROD_FILTER_OPTION_VALUE X, FILTER_OPTION_VALUE Y
+		                WHERE
+		                  X.FILTER_OPTION_VALUE_ID = Y.FILTER_OPTION_VALUE_ID
+		                  AND Y.FILTER_OPTION_VALUE_NAME LIKE '%' || #{searchValue} || '%'
+		            ))
+				</if>
+				
+				<if test='gender != null and gender != "" and gender != "all"'>
+					AND A.PROD_ID IN (
+		                SELECT
+		                    X.PROD_ID
+		                FROM
+		                    PROD_FILTER_OPTION_VALUE X, FILTER_OPTION_VALUE Y
+		                WHERE
+		                  X.FILTER_OPTION_VALUE_ID = Y.FILTER_OPTION_VALUE_ID
+		                  AND Y.FILTER_OPTION_VALUE_NAME = #{gender}
+		            )
+				</if>
+				
+				<if test='brand != null and brand != "" and brand != "all"'>
+					AND A.PROD_ID IN (
+		                SELECT
+		                    X.PROD_ID
+		                FROM
+		                    PROD_FILTER_OPTION_VALUE X, FILTER_OPTION_VALUE Y
+		                WHERE
+		                  X.FILTER_OPTION_VALUE_ID = Y.FILTER_OPTION_VALUE_ID
+		                  AND Y.FILTER_OPTION_VALUE_NAME LIKE '%' || #{brand} || '%'
+		            )
+				</if>
+				
+				<if test='material != null and material != "" and material != "all"'>
+					AND A.PROD_ID IN (
+		                SELECT
+		                    X.PROD_ID
+		                FROM
+		                    PROD_FILTER_OPTION_VALUE X, FILTER_OPTION_VALUE Y
+		                WHERE
+		                  X.FILTER_OPTION_VALUE_ID = Y.FILTER_OPTION_VALUE_ID
+		                  AND Y.FILTER_OPTION_VALUE_NAME LIKE '%' || #{material} || '%'
+		            )
+				</if>
+				
+				<if test='priceStartRow != null and priceStartRow != ""'>
+					AND (A.PROD_PRICE * (1 - (A.PROD_DISCOUNT_PERCENT / 100))) <![CDATA[ >= ]]> #{priceStartRow}
+				</if>
+				
+				<if test='priceEndRow != null and priceEndRow != ""'>
+					AND (A.PROD_PRICE * (1 - (A.PROD_DISCOUNT_PERCENT / 100))) <![CDATA[ <= ]]> #{priceEndRow}
+				</if>
+				
+				ORDER BY
+				
+				<if test='array != null and array !=""'>
+					<choose>
+						<when test='array == "1"'>
+							TO_CHAR(SUBSTR(A.PROD_ID, 5))
+						</when>
+						<when test='array == "2"'>
+							NVL(
+						        (SELECT COUNT(*) 
+						         FROM WISHLIST W 
+						         WHERE W.PROD_ID = A.PROD_ID), 
+						        0
+						    )
+						</when>
+						<when test='array == "3"'>
+							A.PROD_DISCOUNT_PERCENT
+						</when>
+					</choose>
+				</if>
+				
+				<if test='array == null and array == "" '>
+					TO_CHAR(SUBSTR(A.PROD_ID, 5))
+				</if>
+				
+		          DESC))
+		WHERE
+		    RNUM <![CDATA[ >= ]]> #{startRow}
+			AND RNUM <![CDATA[ <= ]]> #{endRow}
+	</select>
+	
+	<select id="prodListCount" parameterType="com.sist.web.model.Prod" resultType="long">
+		SELECT 
+		    COUNT(PROD_ID) AS PROD_ID
+		FROM 
+		    PROD A, PROD_MAIN_CATE B, PROD_SUB_CATE C
+		WHERE
+		    A.PROD_SUB_CATE_COMBINED_ID = C.PROD_SUB_CATE_COMBINED_ID
+		    AND B.PROD_MAIN_CATE_ID = C.PROD_MAIN_CATE_ID
+		    <if test='cateId != null and cateId != ""'>
+	            AND C.PROD_MAIN_CATE_ID LIKE '%' || #{cateId} || '%'
+			</if>
+			
+			<if test='searchValue != null and searchValue != ""'>
+					AND (A.PROD_NAME LIKE '%' || #{searchValue} || '%'
+					OR A.PROD_ID IN (
+		                SELECT
+		                    X.PROD_ID
+		                FROM
+		                    PROD_FILTER_OPTION_VALUE X, FILTER_OPTION_VALUE Y
+		                WHERE
+		                  X.FILTER_OPTION_VALUE_ID = Y.FILTER_OPTION_VALUE_ID
+		                  AND Y.FILTER_OPTION_VALUE_NAME LIKE '%' || #{searchValue} || '%'
+		            ))
+				</if>
+			
+			<if test='gender != null and gender != "" and gender != "all"'>
+				AND A.PROD_ID IN (
+	                SELECT
+	                    X.PROD_ID
+	                FROM
+	                    PROD_FILTER_OPTION_VALUE X, FILTER_OPTION_VALUE Y
+	                WHERE
+	                  X.FILTER_OPTION_VALUE_ID = Y.FILTER_OPTION_VALUE_ID
+	                  AND Y.FILTER_OPTION_VALUE_NAME = #{gender}
+	            )
+			</if>
+			
+			<if test='brand != null and brand != "" and brand != "all"'>
+				AND A.PROD_ID IN (
+	                SELECT
+	                    X.PROD_ID
+	                FROM
+	                    PROD_FILTER_OPTION_VALUE X, FILTER_OPTION_VALUE Y
+	                WHERE
+	                  X.FILTER_OPTION_VALUE_ID = Y.FILTER_OPTION_VALUE_ID
+	                  AND Y.FILTER_OPTION_VALUE_NAME LIKE '%' || #{brand} || '%'
+	            )
+			</if>
+			
+			<if test='material != null and material != "" and material != "all"'>
+				AND A.PROD_ID IN (
+	                SELECT
+	                    X.PROD_ID
+	                FROM
+	                    PROD_FILTER_OPTION_VALUE X, FILTER_OPTION_VALUE Y
+	                WHERE
+	                  X.FILTER_OPTION_VALUE_ID = Y.FILTER_OPTION_VALUE_ID
+	                  AND Y.FILTER_OPTION_VALUE_NAME LIKE '%' || #{material} || '%'
+	            )
+			</if>
+			
+			<if test='priceStartRow != null and priceStartRow != ""'>
+				AND (A.PROD_PRICE * (1 - (A.PROD_DISCOUNT_PERCENT / 100))) <![CDATA[ >= ]]> #{priceStartRow}
+			</if>
+			
+			<if test='priceEndRow != null and priceEndRow != ""'>
+				AND (A.PROD_PRICE * (1 - (A.PROD_DISCOUNT_PERCENT / 100))) <![CDATA[ <= ]]> #{priceEndRow}
+			</if>
+				
+	</select>
+	
+	<select id="detailProdView" parameterType="com.sist.web.model.Prod" resultMap="prodResultMap">
+		SELECT 
+		    A.PROD_ID, 
+		    NVL(A.PROD_NAME, '') AS PROD_NAME, 
+		    NVL(A.PROD_PRICE, 0) AS PROD_PRICE, 
+		    NVL(A.PROD_DISCOUNT_PERCENT, 0) AS PROD_DISCOUNT_PERCENT, 
+		    NVL(A.PROD_INFO, '') AS PROD_INFO, 
+		    NVL(A.PROD_STATUS, '') AS PROD_STATUS, 
+		    NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS REG_DATE,
+		    NVL(B.PROD_MAIN_CATE_ID, '') AS PROD_MAIN_CATE_ID,
+		    CASE 
+	            WHEN EXISTS (
+	                SELECT 1 
+	                FROM WISHLIST W
+	                WHERE W.PROD_ID = A.PROD_ID 
+	                  AND W.USER_EMAIL = #{userEmail}
+	            ) THEN 'Y'
+	        ELSE 'N'
+		END AS HEART
+		FROM 
+		    PROD A, PROD_MAIN_CATE B, PROD_SUB_CATE C
+		WHERE
+			A.PROD_SUB_CATE_COMBINED_ID = C.PROD_SUB_CATE_COMBINED_ID
+			AND B.PROD_MAIN_CATE_ID = C.PROD_MAIN_CATE_ID 
+		    AND A.PROD_ID = #{prodId}
+	</select>
+	
+	<select id="optionCntList" parameterType="string" resultMap="valueOptionResultMap">
+	
+		SELECT * FROM PROD_VARIANTS_OPTION WHERE PROD_ID = #{value}
+	
+	</select>
+	
+	<select id="optionListView" parameterType="string" resultMap="valueOptionResultMap">
+	
+		SELECT 
+			VARIANTS_OPTION_VALUE_ID, VARIANTS_OPTION_VALUE_NAME 
+		FROM 
+			VARIANTS_OPTION_VALUE 
+		WHERE 
+			VARIANTS_OPTION_VALUE_ID 
+			IN(
+			    SELECT VARIANTS_OPTION_VALUE_COMB_ID
+			    FROM VARIANTS_OPTION_VALUE_COMB 
+			    WHERE PROD_ID = #{value} AND VARIANTS_OPTION_VALUE_COMB_STOCK > 0 AND VARIANTS_OPTION_VALUE_COMB_ID NOT LIKE '%DEFAULT%'
+			)
+	
+	</select>
+	
+	<select id="sizeListView" parameterType="string" resultMap="valueOptionResultMap">
+		SELECT 
+			VARIANTS_OPTION_VALUE_ID, 
+			VARIANTS_OPTION_VALUE_NAME 
+		FROM 
+			VARIANTS_OPTION_VALUE 
+		WHERE 
+			VARIANTS_OPTION_VALUE_ID IN (
+		    	SELECT 
+		    		SUBSTR(VARIANTS_OPTION_VALUE_COMB_ID, 1, INSTR(VARIANTS_OPTION_VALUE_COMB_ID, '_THEME_') - 1) VARIANTS_OPTION_VALUE_ID 
+		    	FROM 
+		    		VARIANTS_OPTION_VALUE_COMB 
+		    	WHERE 
+		    		PROD_ID = #{value} 
+		    		AND VARIANTS_OPTION_VALUE_COMB_STOCK > 0
+				)
+	</select>
+	
+	<select id="colorListView" parameterType="string" resultMap="valueOptionResultMap">
+		SELECT 
+			VARIANTS_OPTION_VALUE_ID, VARIANTS_OPTION_VALUE_NAME
+		FROM 
+			VARIANTS_OPTION_VALUE
+		WHERE 
+			VARIANTS_OPTION_VALUE_ID IN (
+				SELECT 
+					SUBSTR(VARIANTS_OPTION_VALUE_COMB_ID, INSTR(VARIANTS_OPTION_VALUE_COMB_ID, '_THEME_') + 1) VARIANTS_OPTION_VALUE_ID
+				FROM 
+					VARIANTS_OPTION_VALUE_COMB
+				WHERE 
+					PROD_ID = #{value}
+					AND VARIANTS_OPTION_VALUE_COMB_STOCK > 0
+				)
+	</select>
+		
+	<select id="popularityProd" parameterType="string" resultMap="prodResultMap">
+	
+		WITH WISHLIST_COUNT AS (
+		    SELECT 
+		        PROD_ID,
+		        COUNT(*) AS WISH_COUNT
+		    FROM 
+		        WISHLIST
+		    GROUP BY 
+		        PROD_ID
+		)
+		SELECT
+		    A.PROD_ID,
+		    NVL(A.PROD_SUB_CATE_COMBINED_ID, '') PROD_SUB_CATE_COMBINED_ID,
+		    NVL(A.PROD_NAME, '') PROD_NAME,
+		    NVL(A.PROD_PRICE, 0) PROD_PRICE,
+		    NVL(A.PROD_DISCOUNT_PERCENT, 0) PROD_DISCOUNT_PERCENT,
+		    NVL(A.PROD_INFO, '') PROD_INFO,
+		    NVL(A.PROD_STATUS, '') PROD_STATUS,
+		    NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS REG_DATE,
+		    NVL(C.PROD_MAIN_CATE_ID, '') PROD_MAIN_CATE_ID,
+		    NVL(B.PROD_MAIN_CATE_NAME, '') PROD_MAIN_CATE_NAME,
+		    NVL(C.PROD_SUB_CATE_ID, '') PROD_SUB_CATE_ID,
+		    NVL(C.PROD_SUB_CATE_NAME, '') PROD_SUB_CATE_NAME,
+		    CASE 
+		        WHEN EXISTS (
+		            SELECT 1 
+		            FROM WISHLIST W
+		            WHERE W.PROD_ID = A.PROD_ID 
+		              AND W.USER_EMAIL = #{value}
+		        ) THEN 'Y'
+		    ELSE 'N'
+		    END AS HEART,
+		    NVL(W.WISH_COUNT, 0) AS WISH_COUNT
+		FROM
+		    PROD A
+		    LEFT JOIN WISHLIST_COUNT W ON A.PROD_ID = W.PROD_ID
+		    JOIN PROD_SUB_CATE C ON A.PROD_SUB_CATE_COMBINED_ID = C.PROD_SUB_CATE_COMBINED_ID
+		    JOIN PROD_MAIN_CATE B ON B.PROD_MAIN_CATE_ID = C.PROD_MAIN_CATE_ID
+		ORDER BY
+		    NVL(W.WISH_COUNT, 0) DESC
+	
+	</select>
+
+</mapper>

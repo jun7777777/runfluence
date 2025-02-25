@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.sist.web.dao.BbsCateDao">
+
+<resultMap type="com.sist.web.model.Bbs" id="bbsResultMap">
+		<id property="bbsSeq" column="BBS_SEQ" />
+	    <result property="bbsSubCateCombinedId" column="BBS_SUB_CATE_COMBINED_ID" />
+	    <result property="bbsTitle" column="BBS_TITLE" />
+	    <result property="bbsContent" column="BBS_CONTENT" />
+	    <result property="regDate" column="REG_DATE" />
+	    <result property="updateDate" column="UPDATE_DATE" />
+	    <result property="bbsReadCnt" column="BBS_READ_CNT" />
+	    <result property="bbsStatus" column="BBS_STATUS" />
+	    <result property="userEmail" column="USER_EMAIL" />
+	    <result property="userName" column="USER_NAME" />
+	    <result property="bbsSubCateName" column="BBS_SUB_CATE_NAME"/>
+	    <result property="bbsMainCateId" column="BBS_MAIN_CATE_ID"/>
+	    <result property="bbsMainCateName" column="BBS_MAIN_CATE_NAME"/>
+	    <result property="bbsImgName" column="BBS_IMG_NAME"/>
+	    <result property="wishlistChk" column="WISHLIST_CHK"/>
+	    <result property="userProfileImg" column="USER_PROFILE_IMG"/>
+	 
+	</resultMap>
+
+	<resultMap type="com.sist.web.model.BbsImg" id="bbsImageResultMap">
+	    <id column="BBS_IMAGE_NUM" property="bbsImageNum"/>
+	    <id column="BBS_SEQ" property="bbsSeq"/>
+	    <result column="USER_EMAIL" property="userEmail"/>
+	    <result column="BBS_IMG_ORG_NAME" property="bbsImgOrgName"/>
+	    <result column="BBS_IMG_NAME" property="bbsImgName"/>
+	    <result column="BBS_IMG_SIZE" property="bbsImgSize"/>
+	    <result column="BBS_IMG_EXT" property="bbsImgExt"/>
+	</resultMap>
+	
+	<select id="stylePostList" parameterType="com.sist.web.model.Bbs" resultMap="bbsResultMap" >
+     SELECT
+       BBS_SEQ,
+       BBS_SUB_CATE_COMBINED_ID,
+       BBS_TITLE,
+       BBS_CONTENT,
+       REG_DATE,
+       UPDATE_DATE,
+       BBS_READ_CNT,
+       BBS_STATUS,
+       USER_EMAIL,
+       USER_NAME,
+       BBS_SUB_CATE_NAME,
+       BBS_MAIN_CATE_ID,
+       BBS_MAIN_CATE_NAME,
+       BBS_IMG_NAME,
+       HEART 
+   FROM(
+       SELECT
+           ROWNUM RNUM,
+           BBS_SEQ,
+           BBS_SUB_CATE_COMBINED_ID,
+           BBS_TITLE,
+           BBS_CONTENT,
+           REG_DATE,
+           UPDATE_DATE,
+           BBS_READ_CNT,
+           BBS_STATUS,
+           USER_EMAIL,
+           USER_NAME,
+           BBS_SUB_CATE_NAME,
+           BBS_MAIN_CATE_ID,
+           BBS_MAIN_CATE_NAME,
+           BBS_IMG_NAME,
+           HEART
+       FROM (
+           SELECT
+               A.BBS_SEQ,
+               NVL(C.BBS_SUB_CATE_COMBINED_ID, '') BBS_SUB_CATE_COMBINED_ID,
+               NVL(A.BBS_TITLE, '') BBS_TITLE,
+               NVL(A.BBS_CONTENT, '') BBS_CONTENT,
+               NVL(TO_CHAR(A.REG_DATE,'YYYY.MM.DD HH24:MI:SS'), '') REG_DATE,
+               NVL(TO_CHAR(A.UPDATE_DATE,'YYYY.MM.DD HH24:MI:SS'), '') UPDATE_DATE,
+               NVL(A.BBS_READ_CNT, 0) BBS_READ_CNT,
+               NVL(A.BBS_STATUS, '') BBS_STATUS,
+               NVL(A.USER_EMAIL, '') USER_EMAIL,
+               NVL(D.USER_NAME, '') USER_NAME,
+               NVL(C.BBS_SUB_CATE_NAME, '') BBS_SUB_CATE_NAME,
+               NVL(B.BBS_MAIN_CATE_ID, '') BBS_MAIN_CATE_ID,
+               NVL(B.BBS_MAIN_CATE_NAME, '') BBS_MAIN_CATE_NAME,
+               (SELECT MIN(BBS_IMG_NAME) 
+                FROM BBS_IMG 
+                WHERE BBS_SEQ = A.BBS_SEQ) BBS_IMG_NAME,
+                CASE 
+                  WHEN EXISTS (
+                      SELECT 1 
+                      FROM BBS_WISHLIST W
+                      WHERE W.BBS_SEQ = A.BBS_SEQ 
+                        AND W.USER_EMAIL = #{userEmail}
+                  ) THEN 'Y'
+              ELSE 'N'
+          END AS HEART
+           FROM
+               BBS A,BBS_MAIN_CATE B,BBS_SUB_CATE C ,TBL_USER D 
+           WHERE
+                  BBS_STATUS = 'Y'
+               
+           AND     A.USER_EMAIL = D.USER_EMAIL
+           AND    A.BBS_SUB_CATE_COMBINED_ID = C.BBS_SUB_CATE_COMBINED_ID
+           AND     B.BBS_MAIN_CATE_ID = C.BBS_MAIN_CATE_ID
+           AND A.BBS_SUB_CATE_COMBINED_ID  LIKE '%' || #{bbsSubCateCombinedId} || '%'
+      
+           ORDER BY A.BBS_SEQ DESC
+       )
+   )
+   WHERE
+      RNUM <![CDATA[>=]]> #{startRow} 
+      AND RNUM <![CDATA[<=]]> #{endRow}
+        
+  </select> 
+  
+  
+  
+    <select id="styleSelect" parameterType="com.sist.web.model.Bbs" resultMap="bbsResultMap">
+   
+      SELECT
+         A.BBS_SEQ,
+            NVL(A.BBS_SUB_CATE_COMBINED_ID, '') BBS_SUB_CATE_COMBINED_ID,
+            NVL(A.BBS_TITLE, '') BBS_TITLE,
+            NVL(A.BBS_CONTENT, '') BBS_CONTENT,
+            NVL(A.REG_DATE, '') REG_DATE,
+            NVL(A.UPDATE_DATE, '') UPDATE_DATE,
+            NVL(A.BBS_READ_CNT, 0) BBS_READ_CNT,
+            NVL(A.BBS_STATUS, '') BBS_STATUS,
+            NVL(A.USER_EMAIL, '') USER_EMAIL,
+            NVL(B.USER_NAME, '') USER_NAME,
+            BI.BBS_IMG_NAME,
+            CASE 
+               WHEN EXISTS (
+                   SELECT 1 
+                   FROM BBS_WISHLIST W
+                   WHERE W.BBS_SEQ = A.BBS_SEQ 
+                     AND W.USER_EMAIL = #{userEmail}
+               ) THEN 'Y'
+           ELSE 'N'
+       END AS WISHLIST_CHK
+      FROM
+         BBS A
+         LEFT OUTER JOIN BBS_IMG BI ON A.BBS_SEQ = BI.BBS_SEQ,
+         TBL_USER B
+      WHERE
+         A.USER_EMAIL = B.USER_EMAIL
+	  AND A.BBS_SEQ = #{bbsSeq}
+   </select>
+
+	
+  <select id="styleScrollSelect"  parameterType="com.sist.web.model.Bbs" resultMap="bbsResultMap">
+      SELECT 
+           BBS_SEQ,
+           BBS_SUB_CATE_COMBINED_ID,
+           BBS_TITLE,
+           BBS_CONTENT,
+           REG_DATE,
+           UPDATE_DATE,
+           BBS_READ_CNT,
+           BBS_STATUS,
+           USER_EMAIL,
+           USER_NAME,
+           BBS_IMG_NAME
+   FROM (SELECT ROWNUM AS RNUM,
+           BBS_SEQ,
+           BBS_SUB_CATE_COMBINED_ID,
+           BBS_TITLE,
+           BBS_CONTENT,
+           REG_DATE,
+           UPDATE_DATE,
+           BBS_READ_CNT,
+           BBS_STATUS,
+           USER_EMAIL,
+           USER_NAME,
+           BBS_IMG_NAME
+    FROM (
+        SELECT 
+            NVL(A.BBS_SEQ, '') AS BBS_SEQ,
+            NVL(A.BBS_SUB_CATE_COMBINED_ID, '') AS BBS_SUB_CATE_COMBINED_ID,
+            NVL(A.BBS_TITLE, '') AS BBS_TITLE,
+            NVL(A.BBS_CONTENT, '') AS BBS_CONTENT,
+            NVL(TO_CHAR(A.REG_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS REG_DATE,
+            NVL(TO_CHAR(A.UPDATE_DATE, 'YYYY.MM.DD HH24:MI:SS'), '') AS UPDATE_DATE,
+            NVL(A.BBS_READ_CNT, '') AS BBS_READ_CNT,
+            NVL(A.BBS_STATUS, '') AS BBS_STATUS,
+            NVL(A.USER_EMAIL, '') AS USER_EMAIL,
+            NVL(B.USER_NAME, '') AS USER_NAME,
+            NVL(C.BBS_IMG_NAME, '') AS BBS_IMG_NAME
+        FROM 
+            BBS A, 
+            TBL_USER B, 
+            BBS_IMG C
+        WHERE 
+            A.USER_EMAIL = B.USER_EMAIL
+            AND A.BBS_SEQ = C.BBS_SEQ
+            AND A.BBS_STATUS = 'Y'
+            AND A.BBS_SUB_CATE_COMBINED_ID = #{bbsSubCateCombinedId}
+            ORDER BY A.BBS_SEQ DESC
+    ))
+    WHERE RNUM BETWEEN #{startRow} + 1 AND #{endRow}
+
+	</select> 
+  
+	<insert id="styleInsert" parameterType="com.sist.web.model.Bbs">
+		<selectKey resultType="long" keyProperty="bbsSeq" order="BEFORE">
+			SELECT BBS_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		 INSERT INTO BBS (
+	        BBS_SEQ,
+	        BBS_SUB_CATE_COMBINED_ID,
+	        BBS_TITLE,
+	        BBS_CONTENT,
+	        REG_DATE,
+	        UPDATE_DATE,
+	        BBS_READ_CNT,
+	        BBS_STATUS,
+	        USER_EMAIL
+	    )
+	   VALUES (
+	        #{bbsSeq},
+	        #{bbsSubCateCombinedId},  
+	        #{bbsTitle},
+	        #{bbsContent},
+	        SYSDATE,
+	        SYSDATE,
+	        0,
+	        #{bbsStatus},
+	        #{userEmail}
+	   )
+	</insert>
+  <select id="styleImgSelect" parameterType="com.sist.web.model.BbsImg" resultMap="bbsImageResultMap">
+  	SELECT 
+        IMG.BBS_IMAGE_NUM BBS_IMAGE_NUM,
+        IMG.BBS_SEQ BBS_SEQ,
+        NVL(IMG.USER_EMAIL, '') USER_EMAIL,
+        NVL(IMG.BBS_IMG_ORG_NAME, '') BBS_IMG_ORG_NAME,
+        NVL(IMG.BBS_IMG_NAME, '') BBS_IMG_NAME,
+        NVL(IMG.BBS_IMG_SIZE, '') BBS_IMG_SIZE,
+        NVL(IMG.BBS_IMG_EXT, '') BBS_IMG_EXT
+
+    FROM 
+        BBS_IMG IMG, 
+        BBS B, 
+        BBS_SUB_CATE SC
+    WHERE 
+        IMG.BBS_SEQ = B.BBS_SEQ
+        AND B.BBS_SUB_CATE_COMBINED_ID = SC.BBS_SUB_CATE_COMBINED_ID
+        AND B.BBS_SEQ = #{bbsSeq}
+        AND IMG.USER_EMAIL = B.USER_EMAIL
+
+  </select>
+  	
+  <insert id="styleImgInsert" parameterType="com.sist.web.model.BbsImg">
+		 <selectKey resultType="long" keyProperty="bbsImageNum" order="BEFORE">
+	        SELECT NVL(MAX(BBS_IMAGE_NUM), 0) + 1 AS BBS_IMAGE_NUM
+	        FROM BBS_IMG
+	        WHERE BBS_SEQ = #{bbsSeq}
+	    </selectKey>
+	    
+	    INSERT INTO 
+			BBS_IMG 
+			(
+			    BBS_IMAGE_NUM,
+				BBS_SEQ,
+				USER_EMAIL,
+				BBS_IMG_ORG_NAME,
+				BBS_IMG_NAME,
+				BBS_IMG_SIZE,
+				BBS_IMG_EXT
+		) VALUES (
+			#{bbsImageNum},
+			#{bbsSeq},
+			#{userEmail},
+			#{bbsImgOrgName},
+			#{bbsImgName},
+			#{bbsImgSize},
+			#{bbsImgExt}
+		)
+	  		
+  </insert>
+<update id="styleUpdate" parameterType="com.sist.web.model.Bbs">
+	
+		UPDATE
+			BBS
+		SET
+			BBS_TITLE = #{bbsTitle}, BBS_CONTENT = #{bbsContent}, UPDATE_DATE = SYSDATE
+		WHERE
+			BBS_SEQ = #{bbsSeq}
+</update>	
+
+<delete id="styleDelete" parameterType="long">
+	
+	DELETE FROM
+			BBS
+	
+		WHERE
+			BBS_SEQ = #{value}
+</delete>
+
+<delete id="styleImgDelete" parameterType="long">
+	   DELETE
+		FROM
+			BBS_IMG
+		WHERE
+		  BBS_SEQ = #{value}
+</delete>
+<select id="styleListCount" parameterType="com.sist.web.model.Bbs" resultType="long">
+	SELECT
+			COUNT(BBS_SEQ)
+		FROM
+			BBS A, BBS_MAIN_CATE B, BBS_SUB_CATE C, TBL_USER D
+		WHERE
+            A.BBS_SUB_CATE_COMBINED_ID = C.BBS_SUB_CATE_COMBINED_ID
+            AND B.BBS_MAIN_CATE_ID = C.BBS_MAIN_CATE_ID
+            AND A.USER_EMAIL = D.USER_EMAIL
+            AND BBS_STATUS = 'Y'
+		<if test='searchType != null and searchType != "" and searchValue != null and searchValue != ""'>
+			<choose>
+            <when test='searchType == "1"'>
+            AND D.USER_NAME LIKE '%' || #{searchValue} || '%'
+            </when>
+            <when test='searchType == "2"'>
+            AND A.BBS_TITLE LIKE '%' || #{searchValue} || '%'
+            </when>
+            <when test='searchType == "3"'>
+            AND DBMS_LOB.INSTR(A.BBS_CONTENT, #{searchValue}) > 0
+            </when>
+            </choose>
+		</if>
+		<if test='bbsSubCateCombinedId != null and bbsSubCateCombinedId != ""'>
+			AND NVL(C.BBS_SUB_CATE_COMBINED_ID, '') LIKE '%' || #{bbsSubCateCombinedId} || '%'
+		</if>
+	</select>
+
+
+<select id="otherStyles" parameterType="com.sist.web.model.Bbs" resultMap="bbsResultMap">       
+  
+SELECT  
+        BBS_SEQ, 
+        USER_EMAIL, 
+        BBS_TITLE,
+        BBS_CONTENT,
+        BBS_IMG_NAME
+FROM (     
+	SELECT  ROWNUM AS RNUM,
+	        BBS_SEQ, 
+	        USER_EMAIL, 
+	        BBS_TITLE,
+	        BBS_CONTENT,
+	        BBS_IMG_NAME
+	  FROM (        
+		SELECT  B.BBS_SEQ, 
+		        B.USER_EMAIL, 
+		        NVL(B.BBS_TITLE, '') BBS_TITLE,
+		        NVL(B.BBS_CONTENT, '') BBS_CONTENT,
+		        NVL(C.BBS_IMG_NAME ,'') BBS_IMG_NAME
+		  FROM (SELECT BBS_SEQ, USER_EMAIL
+		          FROM BBS 
+		         WHERE BBS_SEQ =  #{bbsSeq}) A, 
+		       BBS B, BBS_IMG C
+		 WHERE B.BBS_SEQ !=  #{bbsSeq}
+		   AND A.USER_EMAIL = B.USER_EMAIL
+		   AND B.BBS_SEQ = C.BBS_SEQ
+		 ORDER BY B.REG_DATE DESC ))
+ WHERE  RNUM <![CDATA[<=]]> 4
+        
+</select>
+  
+ <select id="getUserEmail" parameterType="long" resultType="string">
+    SELECT USER_EMAIL
+    FROM BBS
+    WHERE BBS_SEQ = #{bbsSeq}
+</select> 	
+ 
+ <select id="bbsSelect" parameterType="com.sist.web.model.Bbs" resultMap="bbsResultMap">
+ 	SELECT 
+    BBS_SEQ, 
+    BBS_SUB_CATE_COMBINED_ID, 
+    NVL(BBS_TITLE, '') BBS_TITLE, 
+    NVL(BBS_CONTENT, '') BBS_CONTENT, 
+    NVL(TO_CHAR(REG_DATE, 'YYYY.MM.DD HH24:MI:SS'),'') REG_DATE, 
+    NVL(TO_CHAR(UPDATE_DATE, 'YYYY.MM.DD HH24:MI:SS'),'') UPDATE_DATE, 
+    NVL(BBS_READ_CNT, 0) BBS_READ_CNT, NVL(BBS_STATUS, 'N') BBS_STATUS, 
+    NVL(A.USER_EMAIL, '') USER_EMAIL,
+    NVL(B.USER_NAME, '') USER_NAME,
+    NVL(B.USER_PROFILE_IMG, '') USER_PROFILE_IMG,
+    CASE 
+        WHEN EXISTS ( 
+        SELECT 
+            1 
+        FROM 
+            BBS_WISHLIST W 
+        WHERE 
+            W.BBS_SEQ = A.BBS_SEQ 
+            AND W.USER_EMAIL = #{userEmail}
+            ) 
+        THEN 
+            'Y' 
+        ELSE 
+            'N' 
+    END AS WISHLIST_CHK 
+    FROM BBS A , TBL_USER B
+    WHERE
+        A.USER_EMAIL = B.USER_EMAIL
+        AND BBS_SEQ = #{bbsSeq}
+ </select>	
+  		
+ <select id="bbsSelectMy" parameterType="com.sist.web.model.Bbs" resultMap="bbsResultMap">
+ 	SELECT
+    BBS_SEQ,
+    BBS_SUB_CATE_COMBINED_ID,
+    NVL(BBS_TITLE, '') BBS_TITLE,
+    NVL(BBS_CONTENT, '') BBS_CONTENT,
+    NVL(TO_CHAR(REG_DATE, 'YYYY.MM.DD HH24:MI:SS'),'') REG_DATE,
+    NVL(TO_CHAR(UPDATE_DATE, 'YYYY.MM.DD HH24:MI:SS'),'') UPDATE_DATE,
+    NVL(BBS_READ_CNT, 0) BBS_READ_CNT,
+    NVL(BBS_STATUS, 'N') BBS_STATUS,
+    NVL(USER_EMAIL, '') USER_EMAIL
+FROM
+    BBS
+WHERE BBS_SEQ = #{bbsSeq}
+AND USER_EMAIL= #{userEmail}
+ </select>	  		
+</mapper>
