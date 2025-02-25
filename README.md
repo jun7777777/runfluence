@@ -65,8 +65,15 @@ jsp 사용 러닝 정보 커뮤니티 및 러닝용품 스토어 개발
 
 장바구니에서 담은 상품 조회,배송 주소 등록,결제 방법 및 배송방법 지정
 
-  
 - **결제**
+![image](https://github.com/user-attachments/assets/933e2797-e72f-4041-a5ce-dc01e38e1eb3)
+
+결제 방법을 선택 가능
+
+![image](https://github.com/user-attachments/assets/ae8b8888-242f-4bb9-97ae-5500e08004b8)
+
+구매한 결과 화면을 확인 가능
+
 - **결제 취소**
 
 ### 사용자 관련 기능
