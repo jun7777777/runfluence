@@ -66,6 +66,7 @@ jsp 사용 러닝 정보 커뮤니티 및 러닝용품 스토어 개발
 장바구니에서 담은 상품 조회,배송 주소 등록,결제 방법 및 배송방법 지정
 
 - **결제**
+
 ![image](https://github.com/user-attachments/assets/933e2797-e72f-4041-a5ce-dc01e38e1eb3)
 
 결제 방법을 선택 가능
@@ -76,11 +77,39 @@ jsp 사용 러닝 정보 커뮤니티 및 러닝용품 스토어 개발
 
 - **결제 취소**
 
+![image](https://github.com/user-attachments/assets/44b6b97e-30e8-4dc4-8303-a40018b1a299)
+
+마이페이지의 구매내역에서 주문 확인
+
+![image](https://github.com/user-attachments/assets/013f276e-c8bf-4932-b57e-c8bde3687a96)
+
+결제에 대한 정보 확인 및 결제 취소 가능
+
 ### 사용자 관련 기능
-- **로그인**: 사용자 인증 및 로그인을 위한 기능 제공
-- **회원가입**: 새로운 사용자 등록 기능
-- **아이디/비밀번호 찾기**: 잊어버린 아이디 및 비밀번호 복구 지원
-- **유저 정보 수정**: 사용자 프로필 및 정보 업데이트 기능
+- **로그인**
+- **회원가입**
+- **아이디/비밀번호 찾기**
+- **유저 정보 수정**
+
+![image](https://github.com/user-attachments/assets/b1d9dcc5-8845-4b67-bcaf-eabccacbac76)
+
+![image](https://github.com/user-attachments/assets/19d813db-8838-4289-948b-45ebc9fd1523)
+
+![image](https://github.com/user-attachments/assets/148af5c2-ede3-4217-8aa2-f49005672741)
+
+마이페이지에서 유저 정보 수정 및 프로필 사진 수정 가능
+
+- **작성한 글 확인**
+
+![image](https://github.com/user-attachments/assets/c19ec0d4-e1b3-42d5-865b-1f7e20f43715)
+
+마이페이지에서 유저 작성글 확인
+
+![image](https://github.com/user-attachments/assets/b2e820ef-c818-4bd8-8f03-4855d93f18f7)
+
+유저 작성 댓글 확인
+
+
 
 ### 콘텐츠 관리 기능
 - **글 작성/수정/삭제**: 게시글 작성, 수정, 삭제 기능 제공
