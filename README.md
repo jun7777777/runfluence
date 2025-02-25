@@ -133,8 +133,10 @@ jsp 사용 러닝 정보 커뮤니티 및 러닝용품 스토어 개발
 ### 공지사항
 - **공지사항 확인**
 
-  
+![image](https://github.com/user-attachments/assets/de9259ef-b548-451c-ac14-88acf38d4b50)
 
+관리자가 작성하는 공지사항
 
+![image](https://github.com/user-attachments/assets/ab68195d-430f-477b-86e0-634a2464b001)
 
-
+자주 묻는 질문 확인
