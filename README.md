@@ -143,8 +143,65 @@ jsp 사용 러닝 정보 커뮤니티 및 러닝용품 스토어 개발
 
 
 ### 회원 관리
+
+![image](https://github.com/user-attachments/assets/99f37deb-8987-4522-9885-e8da0a1efeab)
+
+관리자 페이지 회원 관리 탭으로 접근
+
+![image](https://github.com/user-attachments/assets/6166bf4b-3711-46a8-8b72-d70861576d9c)
+
+![image](https://github.com/user-attachments/assets/eae5b06a-957b-43d1-b20c-01c60a89ac8e)
+
+가입 회원을 리스트로 확인하고 회원정보 수정 가능
+
 ### 제품 등록
+
+![image](https://github.com/user-attachments/assets/07282750-79b3-4d88-befd-95b8dd97d1a5)
+
+관리자 페이지의 제품 관리로 접근
+
+![image](https://github.com/user-attachments/assets/b473a8ce-8230-4a24-a4cb-588b0bdc7ce8)
+
+제품 설명과 이미지 업로드
+
+![image](https://github.com/user-attachments/assets/a4283e9f-6f02-4900-abf2-7e8732dea4f7)
+
+![image](https://github.com/user-attachments/assets/0dcf33ea-d9be-48b7-9111-4ea2cd9135a9)
+
+제품 활성화 상태 및 필터를 지정하고 해당 조합에 따른 재고 입력
+
 ### 판매 개요
+
+![image](https://github.com/user-attachments/assets/efab2f78-813d-44f0-8cc4-11a4b7f8016a)
+
+판매 현황에서 판매 개요를 확인하고 각 상세페이지 접근 가능
+
+![image](https://github.com/user-attachments/assets/94548f2c-4b19-414f-99a0-3b4555232d96)
+
+![image](https://github.com/user-attachments/assets/94e2ce24-6f34-4d45-9acd-4d8a1cef0dc4)
+
+제품별 판매량 탭에서 검색 및 추천제품 검색어 확인
+
 ### 제품 재고 관리
+
+![image](https://github.com/user-attachments/assets/0c7bb765-bd35-4755-b66a-856cb72af45c)
+
+제품명 검색 시 리스트에서 제품 옵션별로 재고 확인 가능
+
+![image](https://github.com/user-attachments/assets/aa83f9be-4d60-4e61-9a3d-a3eddc3f5a9e)
+
+재고 수량 및 판매량을 차트로 확인
+
 ### 주문 조회
+
+![image](https://github.com/user-attachments/assets/f90d73aa-614c-4e7e-85f9-14e18b3c4cc3)
+
+이메일 및 주문번호로 상세 주문 사항 확인
+
 ### 공지사항
+
+![image](https://github.com/user-attachments/assets/52c5ee8a-8722-4555-88f2-7037112557b5)
+
+![image](https://github.com/user-attachments/assets/0b14a3e1-1dc4-48bb-91e5-21457f2958a4)
+
+공지사항을 리스트로 확인 상세 페이지에서 수정 및 삭제 가능
